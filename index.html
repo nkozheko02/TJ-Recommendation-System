@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Т—Ж · журнал про деньги и жизнь</title>
+  <meta name="description" content="Журнал про деньги и жизнь. Светлый, спокойный, с чёткой иерархией." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#F2F3F5;
+      --surface:#FFFFFF;
+      --surface-2:#F7F8FA;
+      --ink:#15171B;
+      --ink-2:#4A4D55;
+      --ink-3:#8A8D95;
+      --line:rgba(21,23,27,.08);
+      --line-2:rgba(21,23,27,.04);
+      --yellow:#FFDD2D;
+      --yellow-2:#FFCF00;
+      --on-yellow:#15171B;
+      --maxw:1340px;
+      --sans:"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --r-card:18px;
+      --r-pill:999px;
+      --top-h:68px;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0E1014;
+        --surface:#16191F;
+        --surface-2:#1B1F26;
+        --ink:#F2F3F5;
+        --ink-2:#B8BAC0;
+        --ink-3:#6E7178;
+        --line:rgba(242,243,245,.08);
+        --line-2:rgba(242,243,245,.04);
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:var(--sans);
+      background:var(--bg);
+      color:var(--ink);
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+      line-height:1.5;
+      font-size:15.5px;
+      overflow-x:hidden;
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+    .mono{font-family:var(--mono);font-feature-settings:"tnum" 1;letter-spacing:.02em}
+    .full-bleed{width:100vw;margin-left:calc(50% - 50vw)}
+
+    /* ===================== Top bar ===================== */
+    .topbar{
+      position:sticky;top:0;z-index:60;
+      background:#15171B;color:#FFFFFF;
+      height:var(--top-h);
+    }
+    .topbar-inner{display:flex;align-items:center;gap:24px;height:100%}
+    .brand-block{display:inline-flex;align-items:baseline;gap:10px}
+    .wordmark{
+      font-weight:900;font-size:clamp(28px, 3vw, 38px);
+      line-height:1;letter-spacing:-.04em;color:#FFFFFF;
+      display:inline-flex;align-items:center;gap:12px;
+    }
+    .wordmark::before{
+      content:"";width:.32em;height:.32em;border-radius:50%;background:var(--yellow);
+      flex:0 0 auto;transform:translateY(-.04em);
+    }
+    .brand-sub{
+      font-family:var(--mono);font-size:11px;color:#8A8D95;
+      letter-spacing:.14em;text-transform:uppercase;font-weight:500;
+    }
+    .top-nav{display:flex;gap:22px;margin-left:14px}
+    .top-nav a{font-size:14px;color:#B8BAC0;font-weight:500}
+    .top-nav a:hover{color:#FFFFFF}
+    .top-spacer{flex:1}
+    .top-time{font-family:var(--mono);font-size:11.5px;color:#6E7178;letter-spacing:.04em}
+    .icon-btn{
+      width:36px;height:36px;border-radius:50%;
+      display:grid;place-items:center;
+      color:#B8BAC0;border:1px solid rgba(255,255,255,.08);
+      transition:all .15s ease;
+    }
+    .icon-btn:hover{color:#FFFFFF;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.04)}
+    .write-btn{
+      display:inline-flex;align-items:center;gap:8px;
+      background:var(--yellow);color:var(--on-yellow);
+      padding:10px 18px;border-radius:var(--r-pill);
+      font-size:13.5px;font-weight:700;
+      transition:transform .15s ease, background .15s ease;
+    }
+    .write-btn:hover{background:var(--yellow-2);transform:translateY(-1px)}
+
+    /* ===================== Marquee (yellow) ===================== */
+    .marquee{
+      background:var(--yellow);color:var(--on-yellow);
+      padding:11px 0;overflow:hidden;
+      border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    .marquee-track{
+      display:flex;gap:48px;
+      white-space:nowrap;
+      animation:marquee 52s linear infinite;
+      width:max-content;
+    }
+    .marquee-item{
+      display:inline-flex;align-items:center;gap:14px;
+      font-size:13.5px;font-weight:600;letter-spacing:.005em;
+    }
+    .marquee-item .dot{
+      width:6px;height:6px;border-radius:50%;background:var(--on-yellow);
+      display:inline-block;flex:0 0 6px;
+    }
+    .marquee-item .live{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--on-yellow);color:var(--yellow);
+      padding:3px 9px;border-radius:6px;
+      font-family:var(--mono);font-size:10.5px;font-weight:700;
+      letter-spacing:.06em;text-transform:uppercase;
+    }
+    .marquee-item .live::before{
+      content:"";width:6px;height:6px;border-radius:50%;background:#FF5252;
+    }
+    @keyframes marquee{
+      from{transform:translateX(0)}
+      to{transform:translateX(-50%)}
+    }
+
+    /* ===================== Topics strip ===================== */
+    .topics{
+      padding:14px 0;
+      position:sticky;top:var(--top-h);z-index:50;
+      background:color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter:saturate(160%) blur(12px);
+      -webkit-backdrop-filter:saturate(160%) blur(12px);
+      border-bottom:1px solid var(--line);
+    }
+    .topics-inner{
+      display:flex;flex-wrap:wrap;gap:6px 18px;
+      font-size:13.5px;align-items:center;
+    }
+    .topics-inner .label{
+      font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--ink-3);margin-right:6px;font-weight:500;
+    }
+    .topics-inner a{
+      color:var(--ink-2);font-weight:500;
+      padding:6px 0;position:relative;
+    }
+    .topics-inner a:hover{color:var(--ink)}
+    .topics-inner a.active{color:var(--ink);font-weight:600}
+    .topics-inner a.active::after{
+      content:"";position:absolute;left:-3px;right:-3px;bottom:-2px;height:7px;
+      background:var(--yellow);z-index:-1;border-radius:3px;transform:translateY(2px);
+    }
+
+    /* ===================== Layout ===================== */
+    .layout{
+      display:grid;
+      grid-template-columns:240px 1fr 320px;
+      gap:24px;
+      align-items:start;
+      padding:24px 0 56px;
+    }
+
+    /* ===================== Cards ===================== */
+    .card{
+      background:var(--surface);
+      border-radius:var(--r-card);
+      padding:20px;
+    }
+    .card-pad{padding:24px}
+    .card-flat{padding:0;overflow:hidden}
+    .card-h{
+      display:flex;justify-content:space-between;align-items:baseline;
+      margin:0 0 16px;
+    }
+    .card-h h3{
+      font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0;
+    }
+    .card-h .more{
+      font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+      letter-spacing:.1em;text-transform:uppercase;font-weight:500;
+    }
+    .card-h .more:hover{color:var(--ink)}
+    .card-h .count{
+      font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+      letter-spacing:.08em;font-weight:500;
+    }
+
+    /* ===================== Sidebar (categories) ===================== */
+    .sidebar .cat-list{display:grid;gap:2px}
+    .cat-item{
+      display:flex;align-items:center;gap:11px;
+      padding:8px 10px;border-radius:10px;
+      font-size:14px;color:var(--ink);font-weight:500;
+      transition:background .12s ease;
+    }
+    .cat-item:hover{background:var(--surface-2)}
+    .cat-icon{
+      width:26px;height:26px;border-radius:8px;
+      display:grid;place-items:center;color:#FFFFFF;flex:0 0 26px;
+    }
+    .cat-icon svg{display:block}
+    .sidebar .promo{
+      margin-top:14px;padding:18px;
+      background:linear-gradient(135deg,#FFE066,#FFDD2D);
+      border-radius:var(--r-card);color:var(--on-yellow);
+    }
+    .sidebar .promo .lbl{
+      font-family:var(--mono);font-size:10px;letter-spacing:.16em;
+      text-transform:uppercase;font-weight:600;opacity:.7;
+    }
+    .sidebar .promo h4{
+      font-size:17px;line-height:1.2;letter-spacing:-.01em;margin:8px 0 12px;font-weight:700;
+    }
+    .sidebar .promo a{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--on-yellow);color:var(--yellow);
+      padding:8px 12px;border-radius:var(--r-pill);
+      font-size:12.5px;font-weight:600;
+    }
+
+    /* ===================== Feed (main) ===================== */
+    .feed{display:grid;gap:20px;min-width:0}
+
+    /* Hero card */
+    .hero-card{
+      background:var(--surface);border-radius:var(--r-card);overflow:hidden;
+      display:grid;grid-template-columns:1.05fr .95fr;
+    }
+    .hero-card .text{padding:32px 32px 28px;display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+    .hero-card .badges{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--yellow);color:var(--on-yellow);
+      padding:4px 10px;border-radius:var(--r-pill);
+      font-family:var(--mono);font-size:10.5px;font-weight:700;
+      letter-spacing:.06em;text-transform:uppercase;
+    }
+    .tag-ghost{
+      background:var(--surface-2);color:var(--ink-2);
+    }
+    .hero-card h1{
+      font-weight:800;
+      font-size:clamp(28px, 2.8vw, 40px);
+      line-height:1.05;letter-spacing:-.025em;
+      margin:14px 0 12px;
+    }
+    .hero-card h1 .hl{
+      background:var(--yellow);color:var(--on-yellow);
+      padding:0 .12em .04em;
+      box-decoration-break:clone;
+      -webkit-box-decoration-break:clone;
+    }
+    .hero-card .lead{
+      font-size:15.5px;color:var(--ink-2);margin:0 0 14px;max-width:46ch;
+    }
+    .hero-card .byline{
+      display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+      color:var(--ink-3);font-size:12.5px;
+      padding-top:14px;border-top:1px solid var(--line);
+    }
+    .hero-card .byline .author{color:var(--ink);font-weight:600}
+    .hero-card .byline .sep{opacity:.5}
+    .hero-card .byline .stat{
+      display:inline-flex;gap:4px;align-items:center;
+      font-family:var(--mono);font-size:11px;color:var(--ink-3);
+    }
+    .hero-card .media{position:relative;background:var(--surface-2);min-height:340px}
+    .hero-card .media img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+    .hero-card .media .stamp{
+      position:absolute;left:14px;top:14px;
+      background:rgba(21,23,27,.75);color:#FFF;
+      padding:6px 10px;border-radius:var(--r-pill);
+      font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+      backdrop-filter:blur(6px);font-weight:600;
+    }
+    .hero-card .media .play{
+      position:absolute;right:14px;bottom:14px;
+      background:var(--yellow);color:var(--on-yellow);
+      width:42px;height:42px;border-radius:50%;
+      display:grid;place-items:center;
+      transition:transform .2s ease;
+    }
+    .hero-card:hover .media .play{transform:scale(1.08)}
+
+    /* News widget */
+    .news h3 .live-pill{
+      display:inline-flex;align-items:center;gap:5px;
+      background:#FF5252;color:#FFFFFF;
+      padding:2px 8px;border-radius:6px;
+      font-family:var(--mono);font-size:9.5px;font-weight:700;
+      letter-spacing:.08em;text-transform:uppercase;margin-left:8px;
+      vertical-align:middle;
+    }
+    .news h3 .live-pill::before{
+      content:"";width:5px;height:5px;border-radius:50%;background:#FFFFFF;
+      animation:pulse 1.6s infinite;
+    }
+    @keyframes pulse{
+      0%,100%{opacity:1}
+      50%{opacity:.4}
+    }
+    .news-list{display:grid;gap:0}
+    .news-item{
+      padding:14px 0;border-bottom:1px solid var(--line);
+      display:grid;grid-template-columns:60px 1fr auto;gap:16px;align-items:baseline;
+    }
+    .news-item:last-child{border-bottom:0}
+    .news-item .when{
+      font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em;
+    }
+    .news-item a{font-size:15px;font-weight:600;letter-spacing:-.005em;color:var(--ink);line-height:1.35}
+    .news-item a:hover{text-decoration:underline;text-decoration-color:var(--yellow);text-decoration-thickness:3px;text-underline-offset:3px}
+    .news-item .meta{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em;white-space:nowrap}
+
+    /* Featured grid */
+    .featured-grid{display:grid;gap:18px}
+    .featured-grid .row-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .featured-grid .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+    .feature{
+      background:var(--surface);border-radius:var(--r-card);overflow:hidden;
+      display:flex;flex-direction:column;
+      transition:transform .25s ease;
+    }
+    .feature:hover{transform:translateY(-3px)}
+    .feature .cover{aspect-ratio:16/10;overflow:hidden;background:var(--surface-2);position:relative}
+    .feature .cover img{width:100%;height:100%;object-fit:cover;transition:transform 1s cubic-bezier(.2,.6,.2,1)}
+    .feature:hover .cover img{transform:scale(1.04)}
+    .feature .cover .cat-tag{
+      position:absolute;left:12px;top:12px;
+      background:var(--yellow);color:var(--on-yellow);
+      padding:4px 9px;border-radius:var(--r-pill);
+      font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;
+    }
+    .feature .body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
+    .feature h3{
+      font-weight:700;font-size:17px;line-height:1.22;letter-spacing:-.012em;margin:0;
+    }
+    .feature p{color:var(--ink-2);font-size:13.5px;margin:0}
+    .feature .meta-row{
+      display:flex;justify-content:space-between;
+      color:var(--ink-3);font-family:var(--mono);
+      font-size:10.5px;letter-spacing:.06em;margin-top:auto;padding-top:8px;
+    }
+    .feature.big .cover{aspect-ratio:16/9}
+    .feature.big h3{font-size:21px}
+
+    /* Duo */
+    .duo-card{background:var(--surface);border-radius:var(--r-card);padding:22px}
+    .duo-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
+    .duo-h{
+      display:flex;justify-content:space-between;align-items:baseline;
+      margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line);
+    }
+    .duo-h h3{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0}
+    .duo-h .n{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.1em}
+    .lead-card{display:block;margin-bottom:14px}
+    .lead-card .cover{
+      aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--surface-2);
+      position:relative;
+    }
+    .lead-card .cover img{width:100%;height:100%;object-fit:cover}
+    .lead-card .cover .cat-tag{
+      position:absolute;left:10px;top:10px;
+      background:var(--yellow);color:var(--on-yellow);
+      padding:4px 9px;border-radius:var(--r-pill);
+      font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;
+    }
+    .lead-card h4{font-weight:700;font-size:17px;line-height:1.22;letter-spacing:-.01em;margin:14px 0 4px}
+    .lead-card p{color:var(--ink-2);margin:0;font-size:13.5px}
+    .duo-list{list-style:none;padding:0;margin:0}
+    .duo-list li{
+      padding:12px 0;border-bottom:1px solid var(--line);
+      display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:baseline;
+    }
+    .duo-list li:last-child{border-bottom:0}
+    .duo-list .n{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.06em}
+    .duo-list a{font-size:14.5px;font-weight:600;line-height:1.32;letter-spacing:-.005em}
+    .duo-list a:hover{text-decoration:underline;text-decoration-color:var(--yellow);text-decoration-thickness:3px;text-underline-offset:3px}
+    .duo-list .meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);white-space:nowrap}
+
+    /* ===================== Right rail ===================== */
+    .rail{display:grid;gap:20px;min-width:0}
+
+    /* Recommendations */
+    .recs-list{display:grid;gap:14px}
+    .rec-item{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:center}
+    .rec-item .thumb{
+      width:46px;height:46px;border-radius:12px;background:var(--surface-2);
+      overflow:hidden;flex:0 0 46px;
+    }
+    .rec-item .thumb img{width:100%;height:100%;object-fit:cover}
+    .rec-item h4{font-size:13.5px;font-weight:600;line-height:1.3;margin:0 0 2px;letter-spacing:-.005em}
+    .rec-item .meta{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.06em}
+
+    /* School (Учебник) */
+    .school-list{display:grid;gap:12px}
+    .school-item{display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:center}
+    .school-icon{
+      width:38px;height:38px;border-radius:11px;flex:0 0 38px;
+      display:grid;place-items:center;color:#FFFFFF;font-size:18px;
+    }
+    .school-item h4{font-size:13.5px;font-weight:600;line-height:1.28;margin:0;letter-spacing:-.005em}
+    .school-item .meta{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.06em;margin-top:2px}
+    .school-cta{
+      display:inline-flex;align-items:center;gap:6px;
+      margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+      font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--ink);font-weight:600;
+    }
+    .school-cta:hover{color:var(--ink-2)}
+
+    /* Discussed */
+    .discussed-list{display:grid;gap:0}
+    .discussed-item{
+      padding:11px 0;border-bottom:1px solid var(--line);
+      display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline;
+    }
+    .discussed-item:last-child{border-bottom:0}
+    .discussed-item a{font-size:13.5px;font-weight:600;line-height:1.32;letter-spacing:-.005em}
+    .discussed-item a:hover{text-decoration:underline;text-decoration-color:var(--yellow);text-decoration-thickness:3px;text-underline-offset:3px}
+    .discussed-item .comments{
+      display:inline-flex;align-items:center;gap:5px;
+      background:var(--surface-2);color:var(--ink-2);
+      padding:3px 9px;border-radius:var(--r-pill);
+      font-family:var(--mono);font-size:11px;font-weight:600;
+    }
+
+    /* ===================== Newsletter (yellow brand block) ===================== */
+    .newsletter{
+      background:var(--yellow);color:var(--on-yellow);
+      padding:clamp(56px, 7vw, 96px) 0;
+      position:relative;overflow:hidden;
+    }
+    .nl-inner{
+      display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(32px, 5vw, 72px);align-items:end;
+    }
+    .nl-eyebrow{
+      font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+      text-transform:uppercase;font-weight:700;
+    }
+    .newsletter h2{
+      font-weight:800;
+      font-size:clamp(32px, 4.6vw, 64px);line-height:1;letter-spacing:-.03em;
+      margin:14px 0 16px;
+    }
+    .newsletter h2 em{font-style:italic;font-weight:800}
+    .newsletter p{max-width:42ch;margin:0;font-size:15.5px;font-weight:500;color:var(--on-yellow)}
+    .nl-form{
+      display:flex;align-items:center;
+      background:var(--on-yellow);border-radius:var(--r-pill);padding:6px;
+    }
+    .nl-form input{
+      flex:1;background:transparent;border:0;color:#FFFFFF;
+      padding:14px 18px;font:inherit;font-size:15px;outline:none;
+    }
+    .nl-form input::placeholder{color:rgba(255,255,255,.45)}
+    .nl-form button{
+      background:var(--yellow);color:var(--on-yellow);
+      border:0;padding:13px 22px;font:inherit;font-size:13.5px;font-weight:700;
+      border-radius:var(--r-pill);cursor:pointer;
+      display:inline-flex;align-items:center;gap:8px;
+      transition:transform .15s ease, background .15s ease;
+    }
+    .nl-form button:hover{background:var(--yellow-2);transform:translateY(-1px)}
+    .nl-perks{
+      display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;
+      font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;
+    }
+    .nl-perks span{display:inline-flex;align-items:center;gap:6px}
+    .nl-perks span::before{
+      content:"";width:6px;height:6px;border-radius:50%;background:var(--on-yellow);
+    }
+
+    /* ===================== Tools (calm strip) ===================== */
+    .tools-strip{
+      padding:24px 0;border-top:1px solid var(--line);
+      display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;
+    }
+    .tools-strip .label{
+      font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--ink-3);font-weight:500;
+    }
+    .tools-strip .links{display:flex;gap:8px;flex-wrap:wrap}
+    .tools-strip .links a{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 14px;background:var(--surface);border-radius:var(--r-pill);
+      font-size:13.5px;color:var(--ink);font-weight:500;
+    }
+    .tools-strip .links a:hover{background:var(--ink);color:var(--surface)}
+    .tools-strip .links a span{
+      font-family:var(--mono);font-size:10.5px;color:var(--ink-3);font-weight:500;
+    }
+    .tools-strip .links a:hover span{color:var(--yellow)}
+
+    /* ===================== Footer ===================== */
+    footer{padding:56px 0 28px}
+    .foot-wordmark{
+      font-weight:900;
+      font-size:clamp(120px, 28vw, 380px);line-height:.82;letter-spacing:-.06em;
+      color:var(--ink);margin:0 0 28px;
+      display:flex;justify-content:space-between;align-items:flex-end;
+    }
+    .foot-wordmark span:first-child::after{
+      content:"";display:inline-block;
+      width:.18em;height:.18em;border-radius:50%;
+      background:var(--yellow);margin-left:.06em;vertical-align:.05em;
+    }
+    .foot-wordmark .since{
+      font-family:var(--mono);font-size:12px;letter-spacing:.08em;
+      color:var(--ink-3);text-transform:uppercase;font-weight:500;
+      max-width:18ch;text-align:right;line-height:1.5;
+    }
+    .foot-cols{
+      display:grid;grid-template-columns:repeat(4, 1fr);gap:32px;
+      padding-top:28px;border-top:1px solid var(--line);
+      font-size:13.5px;
+    }
+    .foot-cols h5{
+      font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+      margin:0 0 12px;color:var(--ink-3);font-weight:500;
+    }
+    .foot-cols a{color:var(--ink-2);display:block;padding:5px 0;font-weight:500}
+    .foot-cols a:hover{color:var(--ink)}
+    .foot-bottom{
+      margin-top:32px;padding-top:18px;border-top:1px solid var(--line);
+      display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+      color:var(--ink-3);font-size:12px;
+    }
+    .foot-bottom .pill-mini{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--surface);padding:5px 10px;border-radius:var(--r-pill);
+      font-family:var(--mono);font-size:11px;
+    }
+    .foot-bottom .pulse{
+      width:7px;height:7px;border-radius:50%;background:#22C55E;
+      box-shadow:0 0 0 0 rgba(34,197,94,.5);
+      animation:pulseAura 2s infinite;display:inline-block;
+    }
+    @keyframes pulseAura{
+      0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}
+      70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}
+      100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}
+    }
+
+    /* ===================== Responsive ===================== */
+    @media (max-width: 1180px){
+      .layout{grid-template-columns:220px 1fr 280px;gap:20px}
+    }
+    @media (max-width: 1024px){
+      .layout{grid-template-columns:1fr 280px}
+      .sidebar{display:none}
+      .hero-card{grid-template-columns:1fr}
+      .hero-card .media{min-height:280px;aspect-ratio:16/10;position:relative}
+      .featured-grid .row-3{grid-template-columns:1fr 1fr}
+      .duo-grid{grid-template-columns:1fr}
+    }
+    @media (max-width: 760px){
+      .layout{grid-template-columns:1fr}
+      .rail{display:none}
+      .top-nav{display:none}
+      .top-time{display:none}
+      .featured-grid .row-2,.featured-grid .row-3{grid-template-columns:1fr}
+      .nl-inner{grid-template-columns:1fr;align-items:start;gap:28px}
+      .foot-cols{grid-template-columns:1fr 1fr}
+      .foot-wordmark{flex-direction:column;align-items:flex-start;gap:16px}
+      .foot-wordmark .since{text-align:left}
+      .icon-btn:not(.search){display:none}
+    }
+    @media (max-width: 480px){
+      .container{padding:0 16px}
+      .topbar-inner{gap:14px}
+      .brand-sub{display:none}
+      .hero-card .text{padding:24px 22px}
+      .write-btn{padding:9px 14px;font-size:12.5px}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand-block">
+        <a href="#" class="wordmark">Т—Ж</a>
+        <span class="brand-sub">медиа</span>
+      </div>
+      <nav class="top-nav" aria-label="Главное">
+        <a href="#read">Для вас</a>
+        <a href="#school">Учебник</a>
+        <a href="#newsletter">Подписка</a>
+        <a href="#discussed">Сообщество</a>
+      </nav>
+      <div class="top-spacer"></div>
+      <span class="top-time">26.04.26 · 19:42 MSK</span>
+      <a class="icon-btn search" aria-label="Поиск" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </a>
+      <a class="icon-btn" aria-label="Уведомления" href="#">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 7 3 9H3c0-2 3-2 3-9z"/><path d="M10 21a2 2 0 004 0"/></svg>
+      </a>
+      <a class="write-btn" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        Написать
+      </a>
+    </div>
+  </header>
+
+  <!-- ===== Marquee (yellow) ===== -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span class="marquee-item"><span class="live">Сейчас</span><b>4 новых материала за час</b></span>
+      <span class="marquee-item"><span class="dot"></span>Ставка ЦБ снова без изменений — что это значит для вкладов</span>
+      <span class="marquee-item"><span class="dot"></span>Налоги для самозанятых · разбор</span>
+      <span class="marquee-item"><span class="dot"></span>Дневник трат маркетолога из Казани</span>
+      <span class="marquee-item"><span class="dot"></span>Грузия весной · маршрут на 7 дней</span>
+      <span class="marquee-item"><span class="dot"></span>ДМС от работодателя — что в нём бесполезно</span>
+      <span class="marquee-item"><span class="live">Сейчас</span><b>4 новых материала за час</b></span>
+      <span class="marquee-item"><span class="dot"></span>Ставка ЦБ снова без изменений — что это значит для вкладов</span>
+      <span class="marquee-item"><span class="dot"></span>Налоги для самозанятых · разбор</span>
+      <span class="marquee-item"><span class="dot"></span>Дневник трат маркетолога из Казани</span>
+      <span class="marquee-item"><span class="dot"></span>Грузия весной · маршрут на 7 дней</span>
+      <span class="marquee-item"><span class="dot"></span>ДМС от работодателя — что в нём бесполезно</span>
+    </div>
+  </div>
+
+  <!-- ===== Topics ===== -->
+  <nav class="topics" aria-label="Темы">
+    <div class="container topics-inner">
+      <span class="label">Темы / 09</span>
+      <a class="active" href="#">Главная</a>
+      <a href="#">Деньги</a>
+      <a href="#">Жильё</a>
+      <a href="#">Здоровье</a>
+      <a href="#">Семья</a>
+      <a href="#">Карьера</a>
+      <a href="#">Путешествия</a>
+      <a href="#">Право</a>
+      <a href="#">Авто</a>
+    </div>
+  </nav>
+
+  <!-- ===== Layout ===== -->
+  <div class="container">
+    <div class="layout">
+
+      <!-- ===== Sidebar (categories) ===== -->
+      <aside class="sidebar">
+        <div class="card">
+          <div class="card-h"><h3>Разделы</h3><span class="count mono">/ 16</span></div>
+          <div class="cat-list">
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#F4C20D">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="2.5" width="9" height="11" rx="1.5"/><path d="M5.5 5.5h5"/><circle cx="5.8" cy="8" r=".4" fill="currentColor"/><circle cx="8" cy="8" r=".4" fill="currentColor"/><circle cx="10.2" cy="8" r=".4" fill="currentColor"/><circle cx="5.8" cy="10.2" r=".4" fill="currentColor"/><circle cx="8" cy="10.2" r=".4" fill="currentColor"/><circle cx="10.2" cy="10.2" r=".4" fill="currentColor"/></svg>
+              </span>
+              Калькуляторы
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#A77BFF">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="12" height="7" rx="3.2"/><path d="M5 8.5h2M6 7.5v2"/><circle cx="10.5" cy="8" r=".5" fill="currentColor"/><circle cx="11.7" cy="9.5" r=".5" fill="currentColor"/></svg>
+              </span>
+              Игры
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#4D9FFF">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5.5"/><path d="M7 6l3 2-3 2z" fill="currentColor"/></svg>
+              </span>
+              Подкасты и видео
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#FF7AB6">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><path d="M2.5 4.5l5.5 4 5.5-4"/></svg>
+              </span>
+              Письма
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#5DCC73">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h10l-1 7H4z"/><path d="M5.5 5V3.5a2.5 2.5 0 015 0V5"/></svg>
+              </span>
+              Шопинг
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#50C8C0">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v12M3 14h10"/><path d="M3 7l-1.5 3a2 2 0 003 0L3 7zM13 7l-1.5 3a2 2 0 003 0L13 7z"/></svg>
+              </span>
+              Сравнятор
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#FF9966">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h10v9H3z"/><path d="M5.5 5V4a2.5 2.5 0 015 0v1"/><circle cx="8" cy="9" r="1"/></svg>
+              </span>
+              Шоп-ассистент
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#FF6B6B">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3.5v9M3.5 8h9"/></svg>
+              </span>
+              Аптечка
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#9CA3AF">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5 6h6M5 8.5h6M5 11h4"/></svg>
+              </span>
+              Новости
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#7B8BF0">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3h7a2 2 0 012 2v8H5a2 2 0 01-2-2V3z"/><path d="M3 11a2 2 0 012-2h7"/></svg>
+              </span>
+              Дневники трат
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#4CAF50">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 11.5l3.5-3.5 2.5 2.5L13 5.5"/><path d="M9.5 5.5H13v3.5"/></svg>
+              </span>
+              Инвестиции
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#4A6CF7">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2.5l5 2v3.5c0 3-2 5-5 6-3-1-5-3-5-6V4.5l5-2z"/></svg>
+              </span>
+              Право
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#F4A261">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 7.5L8 3l5.5 4.5V13H2.5V7.5z"/><rect x="6.5" y="9.5" width="3" height="3.5"/></svg>
+              </span>
+              Недвижимость
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#E76F51">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 13.5C5 11 2.5 9 2.5 6.5c0-2 1.5-3 3-3 1.2 0 2 .6 2.5 1.5.5-.9 1.3-1.5 2.5-1.5 1.5 0 3 1 3 3 0 2.5-2.5 4.5-5.5 7z"/></svg>
+              </span>
+              Медицина и здоровье
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#2EC4B6">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 9l4-1 5-5 1.5 1.5-5 5-1 4-2-2-2.5-2.5z"/></svg>
+              </span>
+              Путешествия
+            </a>
+            <a class="cat-item" href="#">
+              <span class="cat-icon" style="background:#06A77D">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6l6-2.5L14 6l-6 2.5L2 6z"/><path d="M5 8v3c0 .8 1.5 1.5 3 1.5s3-.7 3-1.5V8"/></svg>
+              </span>
+              Образование
+            </a>
+          </div>
+        </div>
+
+        <div class="promo">
+          <div class="lbl">Спецпроект</div>
+          <h4>Дневник трат · Расскажите свою историю</h4>
+          <a href="#">Заполнить →</a>
+        </div>
+      </aside>
+
+      <!-- ===== Feed (main) ===== -->
+      <div class="feed">
+
+        <!-- Hero card -->
+        <article class="hero-card">
+          <div class="text">
+            <div>
+              <div class="badges">
+                <span class="tag">Деньги</span>
+                <span class="tag tag-ghost">Выбор редакции</span>
+                <span class="mono" style="font-size:11px;color:var(--ink-3);letter-spacing:.04em">9 минут чтения</span>
+              </div>
+              <h1><a href="article.html" style="color:inherit">Как пересобрать <span class="hl">личный&nbsp;бюджет</span> за один вечер</a></h1>
+              <p class="lead">Простой способ навести порядок в финансах: разделить деньги на четыре корзины, поставить две цели и автоматизировать всё, что можно. Без таблиц на сорок строк.</p>
+            </div>
+            <div class="byline">
+              <span class="author">Анна Левченко</span>
+              <span class="sep">/</span>
+              <span>Сегодня, 19:00</span>
+              <span class="sep">/</span>
+              <span class="stat">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                3.2K
+              </span>
+              <span class="stat">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                48
+              </span>
+            </div>
+          </div>
+          <a class="media" href="article.html" aria-label="Открыть статью">
+            <span class="stamp">Cover · 26 / 04</span>
+            <span class="play" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </span>
+            <img
+              src="https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=1400&q=80"
+              alt="Открытая записная книжка с ручкой"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </a>
+        </article>
+
+        <!-- News widget -->
+        <section class="card news">
+          <div class="card-h">
+            <h3>Новости <span class="live-pill">Live</span></h3>
+            <a class="more" href="#">Все новости →</a>
+          </div>
+          <div class="news-list">
+            <div class="news-item">
+              <span class="when">2 ч назад</span>
+              <a href="#">На лондонском марафоне сразу два спортсмена впервые в истории выбежали из двух часов</a>
+              <span class="meta">4 ком.</span>
+            </div>
+            <div class="news-item">
+              <span class="when">3 ч назад</span>
+              <a href="#">Дмитрий Неделин установил новый рекорд России в марафоне — предыдущий держался 19 лет</a>
+              <span class="meta">12 ком.</span>
+            </div>
+            <div class="news-item">
+              <span class="when">4 ч назад</span>
+              <a href="#">ЦБ снова оставил ключевую ставку без изменений — что это значит для вкладов и ипотеки</a>
+              <span class="meta">87 ком.</span>
+            </div>
+            <div class="news-item">
+              <span class="when">5 ч назад</span>
+              <a href="#">Налог на проценты по вкладам: кто заплатит и как уменьшить сумму</a>
+              <span class="meta">35 ком.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Featured grid -->
+        <section id="read">
+          <div class="card-h" style="margin:8px 4px 14px">
+            <h3 style="font-size:22px;font-weight:800;letter-spacing:-.02em">Что почитать сегодня</h3>
+            <a class="more" href="#">Все материалы →</a>
+          </div>
+          <div class="featured-grid">
+            <div class="row-2">
+              <a class="feature big" href="#">
+                <div class="cover">
+                  <span class="cat-tag">Деньги</span>
+                  <img src="https://images.unsplash.com/photo-1579621970795-87facc2f976d?auto=format&fit=crop&w=1200&q=70" alt="" loading="lazy" />
+                </div>
+                <div class="body">
+                  <h3>Подушка безопасности: сколько откладывать в 2026 году</h3>
+                  <p>Считаем нормальный размер резерва и где его держать, чтобы не терять на инфляции.</p>
+                  <div class="meta-row"><span>7 МИН · ИЛЬЯ МОРОЗОВ</span><span>26.04</span></div>
+                </div>
+              </a>
+              <a class="feature big" href="#">
+                <div class="cover">
+                  <span class="cat-tag">Жильё</span>
+                  <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=70" alt="" loading="lazy" />
+                </div>
+                <div class="body">
+                  <h3>Ипотека или аренда: считаем по-честному, без эмоций</h3>
+                  <p>Расчёт без идеологии: когда покупать выгодно, а когда лучше продолжать снимать.</p>
+                  <div class="meta-row"><span>9 МИН · МАША ПЕТРОВА</span><span>26.04</span></div>
+                </div>
+              </a>
+            </div>
+            <div class="row-3">
+              <a class="feature" href="#">
+                <div class="cover">
+                  <span class="cat-tag">Карьера</span>
+                  <img src="https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy" />
+                </div>
+                <div class="body">
+                  <h3>Как уйти в долгий отпуск и не потерять работу</h3>
+                  <div class="meta-row"><span>6 МИН</span><span>25.04</span></div>
+                </div>
+              </a>
+              <a class="feature" href="#">
+                <div class="cover">
+                  <span class="cat-tag">Здоровье</span>
+                  <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy" />
+                </div>
+                <div class="body">
+                  <h3>ДМС от работодателя: что в нём бесполезно</h3>
+                  <div class="meta-row"><span>8 МИН</span><span>25.04</span></div>
+                </div>
+              </a>
+              <a class="feature" href="#">
+                <div class="cover">
+                  <span class="cat-tag">Семья</span>
+                  <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=800&q=70" alt="" loading="lazy" />
+                </div>
+                <div class="body">
+                  <h3>Деньги в паре: четыре рабочих модели бюджета</h3>
+                  <div class="meta-row"><span>7 МИН</span><span>24.04</span></div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Duo: Diaries + Explainers -->
+        <section class="duo-card">
+          <div class="duo-grid">
+            <div id="diaries">
+              <div class="duo-h">
+                <h3>Дневники трат</h3>
+                <span class="n mono">12 за неделю →</span>
+              </div>
+              <a class="lead-card" href="#">
+                <div class="cover">
+                  <span class="cat-tag">Дневник</span>
+                  <img src="https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=1200&q=70" alt="" loading="lazy" />
+                </div>
+                <h4>Маркетолог из Казани, 28 лет, доход 180 000 ₽</h4>
+                <p>Месяц трат, поездка к родителям и неожиданный спор с собой про подписки.</p>
+              </a>
+              <ul class="duo-list">
+                <li><span class="n">02</span><a href="#">Семья из четырёх человек в Питере: 240 000 ₽</a><span class="meta">9 МИН</span></li>
+                <li><span class="n">03</span><a href="#">Айтишник, который переехал в Тбилиси и стал тратить меньше</a><span class="meta">8 МИН</span></li>
+                <li><span class="n">04</span><a href="#">Учитель в небольшом городе: жизнь на 65 000 ₽</a><span class="meta">6 МИН</span></li>
+              </ul>
+            </div>
+            <div id="explainers">
+              <div class="duo-h">
+                <h3>Разборы</h3>
+                <span class="n mono">24 в апреле →</span>
+              </div>
+              <ul class="duo-list">
+                <li><span class="n">01</span><a href="#">Списали деньги по подписке, которую вы не оформляли</a><span class="meta">5 МИН</span></li>
+                <li><span class="n">02</span><a href="#">Как вернуть налог за лечение и обучение в 2026 году</a><span class="meta">6 МИН</span></li>
+                <li><span class="n">03</span><a href="#">Шумные соседи: пошагово, без скандала</a><span class="meta">4 МИН</span></li>
+                <li><span class="n">04</span><a href="#">Договор аренды: семь пунктов, которые защищают</a><span class="meta">7 МИН</span></li>
+                <li><span class="n">05</span><a href="#">Что делать, если работодатель задерживает зарплату</a><span class="meta">5 МИН</span></li>
+                <li><span class="n">06</span><a href="#">Как читать договор страховки: где «зашиты» отказы</a><span class="meta">8 МИН</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ===== Right rail ===== -->
+      <aside class="rail">
+
+        <div class="card">
+          <div class="card-h">
+            <h3>Персональные<br/>рекомендации</h3>
+            <a class="more" href="#">Все →</a>
+          </div>
+          <div class="recs-list">
+            <a class="rec-item" href="#">
+              <span class="thumb"><img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=200&q=70" alt="" loading="lazy" /></span>
+              <div>
+                <h4>Лучшие фильмы Тарантино</h4>
+                <span class="meta">КИНО · 12 МИН</span>
+              </div>
+            </a>
+            <a class="rec-item" href="#">
+              <span class="thumb"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=200&q=70" alt="" loading="lazy" /></span>
+              <div>
+                <h4>Какие кроссовки выбрать в 2026 году</h4>
+                <span class="meta">ШОПИНГ · 8 МИН</span>
+              </div>
+            </a>
+            <a class="rec-item" href="#">
+              <span class="thumb"><img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&w=200&q=70" alt="" loading="lazy" /></span>
+              <div>
+                <h4>Плюсы и минусы породы аусси</h4>
+                <span class="meta">ПИТОМЦЫ · 6 МИН</span>
+              </div>
+            </a>
+            <a class="rec-item" href="#">
+              <span class="thumb"><img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=200&q=70" alt="" loading="lazy" /></span>
+              <div>
+                <h4>Что такое нейросеть простыми словами</h4>
+                <span class="meta">ТЕХНО · 10 МИН</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="card" id="school">
+          <div class="card-h">
+            <h3>Учебник</h3>
+            <span class="count mono">/ 24 курса</span>
+          </div>
+          <div class="school-list">
+            <a class="school-item" href="#">
+              <span class="school-icon" style="background:#FF7AB6">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 8.5C20 4.5 16 3 12 7c-4-4-8-2.5-8 1.5C4 13 12 19 12 19s8-6 8-10.5z"/></svg>
+              </span>
+              <div>
+                <h4>Секс в отношениях</h4>
+                <div class="meta">9 ШАГОВ · БЕСПЛАТНО</div>
+              </div>
+            </a>
+            <a class="school-item" href="#">
+              <span class="school-icon" style="background:#FF9966">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg>
+              </span>
+              <div>
+                <h4>Математика для жизни</h4>
+                <div class="meta">14 УРОКОВ · НОВЫЙ</div>
+              </div>
+            </a>
+            <a class="school-item" href="#">
+              <span class="school-icon" style="background:#7B8BF0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3h11l3 3v15H5V3z"/><path d="M16 3v3h3"/></svg>
+              </span>
+              <div>
+                <h4>Брачный договор</h4>
+                <div class="meta">7 ШАГОВ · С ЮРИСТОМ</div>
+              </div>
+            </a>
+            <a class="school-item" href="#">
+              <span class="school-icon" style="background:#06A77D">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              </span>
+              <div>
+                <h4>Как пользоваться нейросетями</h4>
+                <div class="meta">12 УРОКОВ · ПОПУЛЯРНЫЙ</div>
+              </div>
+            </a>
+          </div>
+          <a class="school-cta" href="#">Учиться бесплатно →</a>
+        </div>
+
+        <div class="card" id="discussed">
+          <div class="card-h">
+            <h3>Обсуждаемое</h3>
+            <span class="count mono">за неделю</span>
+          </div>
+          <div class="discussed-list">
+            <div class="discussed-item">
+              <a href="#">Что делать, если арендодатель внезапно поднял плату на 30%</a>
+              <span class="comments">187</span>
+            </div>
+            <div class="discussed-item">
+              <a href="#">Стоит ли брать ипотеку в 2026 году — мнения читателей</a>
+              <span class="comments">143</span>
+            </div>
+            <div class="discussed-item">
+              <a href="#">Расскажите, как вы откладываете на пенсию</a>
+              <span class="comments">98</span>
+            </div>
+            <div class="discussed-item">
+              <a href="#">У кого есть подушка на год — как вы её копили?</a>
+              <span class="comments">76</span>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+
+    <!-- Tools strip -->
+    <div class="tools-strip" id="tools">
+      <span class="label">Инструменты / 03</span>
+      <div class="links">
+        <a href="#"><span>01</span>Калькуляторы</a>
+        <a href="#"><span>02</span>Тесты</a>
+        <a href="#"><span>03</span>Игры</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Newsletter (yellow) ===== -->
+  <section class="newsletter full-bleed" id="newsletter">
+    <div class="container nl-inner">
+      <div>
+        <span class="nl-eyebrow">Письмо редактора · по воскресеньям</span>
+        <h2>Одно письмо <em>в неделю.</em><br/>Только то, что стоит&nbsp;прочитать.</h2>
+        <p>Пять материалов, отобранных вручную, и короткое письмо от редактора. Без рекламы внутри.</p>
+        <div class="nl-perks">
+          <span>Без спама</span>
+          <span>Отписка в один клик</span>
+          <span>32 000 читателей</span>
+        </div>
+      </div>
+      <div>
+        <form class="nl-form" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Готово ✓'; this.querySelector('input').value='';">
+          <input type="email" placeholder="ваш@email.ru" aria-label="Email" required />
+          <button type="submit">Подписаться</button>
+        </form>
+        <div class="nl-perks" style="margin-top:14px"><span>Воскресенье, 09:00 МСК</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer>
+    <div class="container">
+      <div class="foot-wordmark">
+        <span>Т—Ж</span>
+        <span class="since">с 2014 — самый большой<br/>журнал про деньги и жизнь</span>
+      </div>
+      <div class="foot-cols">
+        <div>
+          <h5>Журнал</h5>
+          <a href="#">Все темы</a>
+          <a href="#">Авторам</a>
+          <a href="#">Редакция</a>
+          <a href="#">Реклама</a>
+        </div>
+        <div>
+          <h5>Сервисы</h5>
+          <a href="#">Калькуляторы</a>
+          <a href="#">Тесты</a>
+          <a href="#">Игры</a>
+          <a href="#">Учебник</a>
+        </div>
+        <div>
+          <h5>Соцсети</h5>
+          <a href="#">Telegram</a>
+          <a href="#">VK</a>
+          <a href="#">YouTube</a>
+          <a href="#">RSS</a>
+        </div>
+        <div>
+          <h5>Помощь</h5>
+          <a href="#">Контакты</a>
+          <a href="#">Правила</a>
+          <a href="#">Политика</a>
+          <a href="#">FAQ</a>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© Т—Ж, 2014 — 2026</span>
+        <span class="pill-mini"><span class="pulse"></span>сайт работает</span>
+        <span class="mono">v.4.2.0 · made with care in Moscow</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

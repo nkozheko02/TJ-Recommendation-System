@@ -1,0 +1,291 @@
+# Рекомендации статей Т‑Ж: i2i по текстовым эмбеддингам + LTR + coview
+
+Офлайн‑пайплайн item‑to‑item «следующая статья» для Т‑Ж: ретрив похожих и пула «открыть новое», обучаемый rerank на логах показов/кликов, продуктовые правила диверсификации и сборка карусели фиксированной длины **K = 12**.
+
+> Статус: пайплайн обучается на полных логах (≈ 22.7 млн строк), модель сохраняется в файл и переиспользуется. Главные точки входа — Python‑скрипты (`train_ltr_full.py`, `extra_analytics.py`), а ноутбук остаётся как песочница для интерактивных экспериментов и единичных сравнений.
+
+---
+
+## 1. Архитектура
+
+Подробная диаграмма — `recs_system_diagram.png` / `recs_system_diagram.svg` (генерируется `build_architecture_diagram.py`). Вкратце:
+
+```
+                    источник (article_id)
+                              │
+          ┌───────────────────┴────────────────────┐
+          ▼                                        ▼
+   ┌───────────────┐                       ┌───────────────┐
+   │  Similar pool │                       │  Explore pool │
+   │  embeddings   │                       │  per‑dept +   │
+   │  ∪ coview     │                       │  global top   │
+   │  (топ‑N)      │                       │  по quality   │
+   │               │                       │  + trend      │
+   └──────┬────────┘                       └──────┬────────┘
+          │                                       │
+          ▼                                       ▼
+   ┌─────────────────────────────────────────────────┐
+   │  Scoring:                                        │
+   │  • LTR (LightGBM LambdaRank, 17 фич, в т.ч.     │
+   │    coview_score / coview_rank) + propensity      │
+   │    debias + ~12k synth coview‑pairs в train      │
+   │  • Fallback на эвристику "sim + priors"          │
+   │    если модель не загружена ИЛИ у источника      │
+   │    < 3 coview‑соседей и age < 3 дней             │
+   └─────────────────────────┬───────────────────────┘
+                             ▼
+   ┌─────────────────────────────────────────────────┐
+   │  Reranking + продуктовые правила:               │
+   │  • анти‑дубликаты по нормализованному заголовку │
+   │  • лимиты по автору и рубрике                   │
+   │  • запреты кросс‑департамент‑переходов          │
+   │  • фильтр explore: похожесть и возраст          │
+   │  • softmax‑семплинг explore‑пула (T=0.35)       │
+   │    + сортировка выбранных explore по ltr_score  │
+   │  • интерливинг: 9 similar + 3 explore           │
+   │    на фиксированных позициях 4 / 7 / 10         │
+   └─────────────────────────┬───────────────────────┘
+                             ▼
+              ┌──────────────────────────────┐
+              │  Сборка карусели  K = 12     │
+              └──────────────────────────────┘
+```
+
+---
+
+## 2. Точки входа: какой файл за что отвечает
+
+| Файл | Роль | Когда запускать |
+|------|------|----------------|
+| `train_ltr_full.py` | **Офлайн‑обучение**: читает все логи (потоково), делает time‑split 80/20, оценивает propensity, обучает LightGBM LambdaRank и CatBoost YetiRank, сохраняет модели и метрики. | Один раз при первом запуске и после изменения данных или фичей. |
+| `serve_carousel.py` | **Онлайн‑инференс**: собирает карусель K=12 строго по архитектуре из диплома — similar (kNN top‑100 ∪ coview top‑50) + explore (top‑30 same‑dept + top‑20 cross‑dept) → LTR → reranking + продуктовые правила. Поддерживает одиночный `--source <id>` и пакетный `--sources-csv`. | Каждый раз, когда нужна выдача. Это единственный целевой production‑путь. |
+| `extra_analytics.py` | Загружает уже обученные модели и собирает дополнительные графики (recall/nDCG/uplift кривые, по‑entity сравнение, partial dependence, распределения скоров, feature_importance, ltr_metrics_overall, ltr_metrics_by_entity). Не переобучает. **По умолчанию оценивает на чистых i2i‑блоках** и пишет файлы с суффиксом `_i2i.png`/`_i2i.json`; с флагом `--mixed` повторяет старую оценку на смешанной выборке (без суффикса). | После `train_ltr_full.py`, чтобы обновить отчётные графики. |
+| `eval_ltr_i2i.py` | **Чистая оценка на i2i‑блоках**: загружает обученные модели и пересчитывает recall/nDCG/MRR @1,3,5,6,10 только на `ml_what-else-mi-pisali` и `what-else-mi-pisali`. Не‑i2i блоки (`ml_personal`, `popularity-block`) из теста исключаются, потому что baseline_sim на них вырождается в random. Сохраняет `reports/ltr_extra_metrics_i2i.json` и `reports/ltr_full_metrics_i2i.json`. | После `train_ltr_full.py` — это **основные** метрики для диплома/презентации. |
+| `train_eval_no_coview_i2i.py` | **A/B «без coview vs с coview» на i2i**: обучает LightGBM без coview‑фич и синтетических групп, оценивает на той же i2i‑подвыборке (20 781 групп) и сравнивает с метриками текущей модели. Сохраняет `models/ltr_lgbm_no_coview.pkl`, `reports/ltr_extra_metrics_no_coview_i2i.json`, `reports/coview_uplift_i2i.json`. | Для честной оценки вклада coview в раздел "Что нового даёт coview". |
+| `analyze_propensity.py` | Считает propensity по позициям отдельно для каждого типа карусели и строит соответствующие графики. | По необходимости при анализе bias. |
+| `make_example_serps.py` | Берёт две статьи‑источника, прогоняет на них baseline (cosine kNN) и LTR, сохраняет таблицы в `reports/examples/`. | Для иллюстраций в отчётах. |
+| `make_neutral_examples.py` | Подбирает 6 нейтральных статей‑источников (Технологии / Подарки / Чемодан / Поп‑культура / Животные / Спорт), прогоняет на них baseline и `serve_carousel.serve_one`, сохраняет CSV в `reports/examples_neutral/`. Использует фильтры по «тяжёлым» темам и блок‑лист на жалобные explore‑заголовки. | Перед обновлением слайдов / примеров. |
+| `build_examples_docx.py` | Из CSV `reports/examples_neutral/*` собирает `examples_neutral.docx` (landscape, полные заголовки, без обрезки) для вставки в отчёт. | После `make_neutral_examples.py`. |
+| `scripts/make_presentation_charts.py` | Рисует 5 PNG в `reports/figures/presentation/` (nDCG, MRR, Recall, сводный uplift, итоговая таблица) — готовые слайды для предзащиты. По умолчанию использует `ltr_extra_metrics_i2i.json` (чистая i2i‑оценка); с флагом `--mixed` — старую смешанную выборку. | После `eval_ltr_i2i.py` / обновления метрик. |
+| `build_architecture_diagram.py` | Рендерит `recs_system_diagram.png/svg`. | После изменения архитектуры. |
+| `build_diploma.py` | Собирает `diploma.docx` из текущих метрик и графиков. | После любого из перечисленных выше скриптов. |
+| `tj_recs_text_embeddings.ipynb` | **Интерактивная среда** для разработки и пошагового сравнения «наша vs baseline» по одной статье. Ad‑hoc эксперименты, для прода не нужен. Может расходиться с прод‑конфигом (`serve_carousel.py`) — источник истины именно скрипт. | Эксперименты. |
+| `recommender.py` | Демо‑CLI: похожие по заголовку через BGE на лету (без LTR/coview/explore). Самостоятельная мини‑утилита. | Демонстрация. |
+| `build_recs_i2i.py` | **Legacy**: массовый прогон по cosine kNN, без coview/LTR/двух пулов. Один раз сгенерировал `recs_i2i.csv`. К текущей архитектуре не подключён. | Не использовать. |
+
+Сохранённые модели:
+
+| Файл | Содержимое |
+|------|------------|
+| `models/ltr_lgbm.pkl` | `{"model": LGBMRanker, "feature_names": [...], "propensity": {pos: p̂}}`. Основная LTR‑модель. |
+| `models/ltr_catboost.cbm` | CatBoostRanker с YetiRank loss. |
+| `models/ltr_lgbm_no_coview.pkl` | LGBMRanker, обученный без coview‑фич и синтетики. Используется только для A/B‑сравнения вклада coview, в проде не применяется. |
+
+---
+
+## 3. Входные данные
+
+| Файл | Описание |
+|------|----------|
+| `tj_article.csv` | Каталог статей (разделитель `;`). `article_id`, заголовок, департамент, рубрика, автор, даты, агрегаты (просмотры/лайки/комментарии/избранное). |
+| `user_articles_embeddings.csv` (~2 GB) | Текстовые эмбеддинги статей (1024d). Используются один раз для построения memmap. |
+| `embeddings_cache/` | Memmap-эмбеддинги: `embeddings.f32`, `ids.txt`, `shape.txt`. |
+| Parquet с логами (по умолчанию `tj_session_w_target_full.parquet`) | Показы/клики карусельных блоков, ≈ 22.7 млн строк. |
+| `coview_cache/coview_index.pkl.gz` | Сериализованный i2i индекс по coview‑событиям: `dict[src_id → list[(cand_id, log p(b\|a))]]`, ≈ 36 тыс. источников, в среднем ~15 соседей (медиана 4); после выравнивания на каталог — 34.7 тыс. источников и 427 тыс. пар. Используется и в кандидатах, и в LTR (`coview_score`, `coview_rank`, синтетические pseudo‑impressions в train). |
+
+---
+
+## 4. Кандидаты: два пула
+
+### 4.1 Similar
+- **kNN по cosine** в готовых эмбеддингах (`sklearn.NearestNeighbors`, метрика `cosine`), `TOPK_SIM = 100`.
+- **Coview**: i2i скор `score_cov(b | a) = log( (c_{b|a} + α) / (tot_a + α·K) )`, берутся `COVIEW_TOP_M = 50` соседей источника из заранее построенного индекса. Слияние с kNN — через `sim_cov = sigmoid(score_cov)` (без дополнительного веса): если кандидат уже есть в kNN — `sim = max(sim_emb, sim_cov)`, иначе добавляется новой строкой с `sim = sim_cov`. Coview‑сигнал нужен и в кандидатах, и в LTR (см. `coview_score`, `coview_rank` в §5).
+
+### 4.2 Explore
+```
+quality   = sigmoid( 12·(0.7·like_rate + 0.3·fav_rate) + 4·comment_rate )
+trend     = log(1 + views) / sqrt(days + 1)
+explore_score = 0.6·quality + 0.4·trend
+```
+Из топ‑M строятся per‑department и global пулы. На уровне источника берутся два среза: same‑dept и cross‑dept (минус `DEPT_CROSS_BLACKLIST`).
+
+---
+
+## 5. Ранжирование: LTR
+
+- **Группа = impression**: ключ `(visit_id, source_article_id, entity_type, day)`. Такая группировка даёт ≈ 2.2 млн валидных групп с size ≥ 2 на полном датасете.
+- **Целевая переменная** — клик (target ∈ {0, 1}).
+- **17 признаков**: `sim`, `cand_log_views`, `cand_like_rate`, `cand_comment_rate`, `cand_log_comments`, `cand_fav_rate`, `cand_fresh`, `same_author`, `abs_age_diff_days`, `same_dept`, `same_rubric`, `src_log_views`, `src_like_rate`, `src_fresh`, `pos`, `coview_score`, `coview_rank`. Последние два загружаются из `coview_cache/coview_index.pkl.gz`: `coview_score = log p(b | a)`, `coview_rank` — позиция кандидата в top‑N coview‑соседей источника. Если пары нет в индексе, обоим присваиваются «отсутствующие» значения (-10 и 200).
+- **Coview как источник дополнительных пар**: помимо реальных impression‑групп train дополняется ~12 тыс. синтетических групп (лимит был 80 тыс., но в индексе оказалось столько источников с ≥ 7 coview‑соседями): для каждой статьи‑источника берётся top‑1 coview‑сосед как positive (y=1) и 5 случайных соседей из «хвоста» (ранг ≥ 5) как negatives, с пониженным весом (sample_weight = 0.3). Это слабая supervision, которая учит ранкер ставить top‑1 coview выше «дальних» соседей и компенсирует selection bias.
+- **Бэкенды**: `LightGBM LGBMRanker(objective="lambdarank")` и `CatBoostRanker(loss_function="YetiRank")`.
+- **Position bias**: `p̂(click | pos)` оценивается на train, веса `w = 1 / max(p̂, 0.02)`. В `analyze_propensity.py` есть разрез по типу карусели — там видно, что классического затухания «сверху вниз» в логах не наблюдается, и propensity устроено по‑разному в каждом типе.
+
+### Reranking и продуктовые правила
+- **Дедуп серий** через нормализованный `title` (год/числа → плейсхолдеры): блок повторного выбора близких заголовков (включая нормализованный заголовок самого источника).
+- **Лимиты в similar**: `MAX_SAME_AUTHOR = 2`, `MAX_SAME_RUBRIC = 6`.
+- **Greedy‑отбор similar по `ltr_score`**: similar‑кандидаты сортируются по убыванию LTR‑скора и подбираются жадно с учётом дедупа, лимитов автора/рубрики и фильтра возраста. Отдельной «якорной» логики «top‑1 по sim в pos 1» нет — на pos 1 встаёт лучший similar по LTR, прошедший правила.
+- **Explore‑квоты** (`EXPLORE_SLOTS = 3`): 2 слота same‑dept (без совпадения рубрики с источником) + 1 слот cross‑dept (с применением блок‑листа `DEPT_CROSS_BLACKLIST = {"Медицина": {"Еда"}}`).
+- **Softmax‑семплинг explore‑пула** для разнообразия между источниками: внутри explore‑пула берётся top‑30 по `ltr_score`, скоры превращаются в вероятности через softmax с температурой `T = 0.35`, и из них без возврата семплируется случайная перестановка. Генератор `np.random.default_rng` сидируется хэшем `blake2b(article_id)` источника, то есть для одного и того же источника порядок детерминированный, а для разных источников — разный. Без этого приёма у тысяч источников с похожими explore‑пулами на верхних слотах вылезали бы одни и те же универсальные статьи.
+- **Сортировка выбранных explore внутри карусели**: после семплинга 3 explore‑кандидата сортируются по убыванию `ltr_score` и кладутся на позиции 4 → 7 → 10. То есть softmax обеспечивает разнообразие *между источниками*, а сортировка — монотонность *внутри одной выдачи*.
+- **Анти‑дубль explore vs similar**: косинусное сходство нового explore с уже отобранными ≤ `EXPLORE_SIM_THR_SAME = 0.55` для same‑dept и ≤ `EXPLORE_SIM_THR_CROSS = 0.45` для cross‑dept.
+- **Фильтр возраста** `MAX_CANDIDATE_AGE_DAYS = 365` (по умолчанию) для отсева устаревших материалов.
+- **Пенальти на explore‑скор**: `exp_score *= 0.85` в `serve_one` — мягкий приоритет similar над explore при формировании финального порядка.
+- **Интерливинг**: explore вставляются на фиксированные позиции `EXPLORE_FIRST_POS = 4`, `EXPLORE_FIRST_POS + EXPLORE_STEP = 7`, `EXPLORE_FIRST_POS + 2·EXPLORE_STEP = 10` (при `K = 12`). Шаг и стартовая позиция вынесены в константы — если поменять `EXPLORE_STEP`, позиции пересчитаются автоматически.
+
+### Fallback на эвристический скор «sim + priors»
+
+`serve_carousel.py` поддерживает деградацию на простой эвристический скор, когда LTR недоступен или у источника не хватает данных. Формула:
+
+```
+score = sim
+      + 0.05 · log(1 + views_candidate)            # prior популярности
+      − 0.15 · min(age_candidate, 365) / 365       # prior свежести (penalty за возраст)
+      + 0.10 · 1[rubric_candidate == rubric_src]   # prior рубрики
+```
+
+Веса (`HEURISTIC_WEIGHT_VIEWS = 0.05`, `HEURISTIC_WEIGHT_AGE = 0.15`, `HEURISTIC_WEIGHT_RUBRIC = 0.10`) подобраны так, чтобы вклад priors был сопоставим с диапазоном `sim ∈ [0, 1]`, но не доминировал над похожестью. После эвристического скоринга применяются те же продуктовые правила (`rerank_carousel`) — фильтр возраста, лимиты автора/рубрики, дедуп, интерливинг 4 / 7 / 10, softmax‑семплинг explore.
+
+Fallback срабатывает в двух режимах:
+
+1. **Глобальный** — если `models/ltr_lgbm.pkl` не загружается (файл отсутствует / битый / KeyError в bundle). `build_context` ловит исключение, печатает предупреждение и оставляет `ctx.model = None`. Все источники в этом запуске обрабатываются эвристикой. Полезно для демо без обученной модели и переживания перерывов в model‑registry.
+2. **Per‑source** — для конкретного источника, у которого ОБА условия истинны:
+   - в coview‑индексе у него меньше `MIN_COVIEW_NEIGHBORS = 3` соседей,
+   - И статья опубликована меньше `MIN_SOURCE_AGE_DAYS = 3` дней назад.
+
+   Если только одно условие — LTR ещё имеет полезный сигнал (либо coview, либо накопленные src‑фичи). Только при обоих — coview‑фичи становятся заполнителями (`coview_score = −10`, `coview_rank = 200`), а src‑фичи (`log_views`, `like_rate`, `fav_rate`) ещё не накопились — LTR в такой ситуации даёт почти случайный скор.
+
+Чтобы было видно, какой режим использовался для источника, в результирующий DataFrame добавляется колонка **`scoring_mode ∈ {"ltr", "heuristic"}`**. Это упрощает мониторинг и debug.
+
+### Когда «данных мало» — сценарии и threshold‑ы
+
+Контекстуальные ситуации, в которых срабатывает per‑source fallback или LTR работает хуже даже не уйдя в fallback:
+
+1. **У источника нет coview‑соседей в индексе.** В `coview_cache/coview_index.pkl.gz` ~34.7 тыс. источников; в каталоге ~100 тыс. статей — значит у ~65 % статей coview‑сигнала нет вообще. Для таких источников `coview_score`, `coview_rank` заполнители, и из 17 признаков LTR фактически работают 15. Если статья ещё и свежая (`age < 3`) — сработает per‑source fallback.
+2. **Источник или кандидат опубликованы недавно** (`days_since_published < ~7`). Тогда `log_views`, `like_rate`, `comment_rate`, `fav_rate` ещё не накопились и приходят околонулевыми, а `fresh ≈ 1`. LTR обычно ставит таким айтемам средний скор; ранжирование сильнее опирается на `sim`.
+3. **Малая группа в логах для соответствующего типа карусели.** На разрезе `popularity-block-recommendation` в test было всего 1 021 группа из 13 750 (`reports/ltr_full_metrics.json`, секция `per_entity_top`) — на нём модель училась на меньшем объёме и метрики менее устойчивые.
+
+Threshold‑ы, заданные константами в `serve_carousel.py`:
+
+| Константа | Значение | Что значит |
+|---|---|---|
+| `MIN_COVIEW_NEIGHBORS` | 3 | Меньше — coview‑сигнал считается отсутствующим |
+| `MIN_SOURCE_AGE_DAYS`  | 3.0 | Меньше — src‑фичи считаются ненакопленными |
+| `HEURISTIC_WEIGHT_VIEWS` | 0.05 | Сила prior популярности |
+| `HEURISTIC_WEIGHT_AGE`   | 0.15 | Сила prior свежести (штраф за возраст) |
+| `HEURISTIC_WEIGHT_RUBRIC`| 0.10 | Сила prior рубрики |
+
+---
+
+## 6. Метрики на полном обучении
+
+Оценка проводится в двух режимах:
+
+### 6.1 Основная (чистая i2i‑постановка) — `reports/ltr_extra_metrics_i2i.json`
+
+Тестируем модель **только на i2i‑блоках**, к которым применима наша постановка: `article.ml_what-else-mi-pisali-block-recommendation` и `article.what-else-mi-pisali-block-recommendation`. Не‑i2i блоки (`ml_personal` — персонализация на user history; `popularity-block` — глобальный топ просмотров) из оценки исключаются, потому что cosine sim к источнику для них не имеет смысла, и наш `baseline_sim` там вырождается в random. Скрипт: `eval_ltr_i2i.py`.
+
+20 781 валидная группа (с кликом, `min_group_size ≥ 2`) из 150 000 i2i‑импрессий test:
+
+| Модель        | recall@1 | nDCG@3 | nDCG@6 | MRR@3 | MRR@6 |
+|---------------|----------|--------|--------|-------|-------|
+| **LightGBM**  | 0.410    | 0.700  | **0.751** | 0.647 | **0.669** |
+| **CatBoost**  | 0.423    | 0.709  | 0.758  | 0.657 | 0.678 |
+| baseline_sim  | 0.309    | 0.618  | 0.696  | 0.560 | 0.598 |
+| random        | 0.308    | 0.629  | 0.697  | 0.572 | 0.604 |
+
+Относительный прирост LightGBM над baseline: **recall@1 +32.5 %, nDCG@3 +13.3 %, nDCG@6 +7.9 %, MRR@6 +12.0 %**. CatBoost немного сильнее во всех метриках (recall@1 +36.8 %).
+
+### 6.2 Историческая (смешанная выборка) — `reports/ltr_full_metrics.json`
+
+Старый прогон, в котором в test попадали все четыре типа карусели (включая `ml_personal` 3 335 групп и `popularity-block` 1 021 группа). 13 750 валидных групп из 150 000.
+
+| Модель        | recall@1 | recall@3 | recall@6 | nDCG@6 | MRR@6 |
+|---------------|----------|----------|----------|--------|-------|
+| **LightGBM**  | 0.405    | 0.875    | 0.989    | 0.748  | 0.665 |
+| **CatBoost**  | 0.419    | 0.878    | 0.990    | 0.754  | 0.674 |
+| baseline_sim  | 0.314    | 0.822    | 0.987    | 0.700  | 0.602 |
+| random        | 0.306    | 0.835    | 0.987    | 0.696  | 0.601 |
+
+Цифры сами по себе верны, но прирост LTR над baseline тут занижен, потому что 32 % групп — это не‑i2i блоки, на которых baseline_sim ≈ random и сравнение бессмысленно. Поэтому **в дипломе и презентации главные результаты берутся из §6.1**; раздел 6.2 оставлен для исторической связности.
+
+### Общие наблюдения
+
+- Честный A/B «без coview vs с coview» (одна и та же i2i‑выборка 20 781 групп, см. `reports/coview_uplift_i2i.json`): **nDCG@6 0.746 → 0.751 (+0.5 пп, +0.6 %), MRR@6 0.663 → 0.669 (+0.6 пп, +0.9 %), Recall@1 0.400 → 0.410 (+1.0 пп, +2.5 %)**. Эффект сконцентрирован в Recall@1 — coview сильнее всего помогает поднять реально кликнутую статью на первую позицию. `coview_score` и `coview_rank` по gain стоят 13–14-ми из 17 признаков (gain ≈ 0.79·10⁶ и 0.53·10⁶), выше формальных one‑hot признаков `same_*`, но ниже всех числовых характеристик источника и кандидата.
+- **`baseline_sim ≈ random` на nDCG/MRR** — типичное проявление **selection bias**: логи собраны под старой системой, и «исходный» список кандидатов уже плотно отфильтрован прод‑retrieval'ом, поэтому перестановка по cosine на этом узком пуле даёт мало выигрыша.
+- Прирост LTR над baseline стабилен на всех K, но это **нижняя оценка** реального онлайн‑эффекта (см. подробный разбор в `diploma.docx`, раздел 10.2).
+
+### Графики
+
+- **Для презентации** (DPI 200, чистая палитра) — `reports/figures/presentation/*.png`, генерирует `scripts/make_presentation_charts.py`. По умолчанию использует i2i‑метрики (§6.1). Чтобы построить графики на смешанной выборке (§6.2), запустите с флагом `--mixed`.
+- **Для отчёта/диплома** — для каждого графика хранится две версии: без суффикса (mixed, исторический прогон) и с суффиксом `_i2i.png` (актуальная чистая i2i‑оценка). Главные для диплома — `_i2i`‑версии:
+  - `reports/figures/ltr_metrics_overall_i2i.png`, `recall_at_n_i2i.png`, `ndcg_at_n_i2i.png`, `uplift_lgbm_vs_baseline_i2i.png`
+  - `feature_importance_gain_i2i.png`, `ltr_metrics_by_entity_i2i.png`, `ltr_vs_baseline_by_entity_i2i.png`
+  - `pdp_sim_i2i.png`, `pdp_logviews_i2i.png`, `pdp_fresh_i2i.png`
+  - `score_distribution_two_models_i2i.png`, `score_distribution_clicked_vs_not_i2i.png`
+- **Не зависят от i2i/mixed** (data‑аналитика train): `propensity_by_position.png`, `propensity_by_entity.png`, `target_share_by_position.png`, `train_test_split_dates.png`, `group_size_distribution.png`.
+
+---
+
+## 7. Как воспроизвести с нуля
+
+### 7.1 Окружение
+
+```bash
+cd "/path/to/Т-Ж рекомендации"
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 7.2 Подготовка данных
+
+1. Положить `tj_article.csv` в корень.
+2. Положить parquet с логами (например, `tj_session_w_target_full.parquet`) и при необходимости поправить путь в `train_ltr_full.py` (константа `LOGS_PARQUET`).
+3. Один раз собрать memmap‑эмбеддингов из `user_articles_embeddings.csv` (через ноутбук, ячейка `build_embeddings_memmap`). После этого исходный CSV больше не нужен — все скрипты работают с `embeddings_cache/`.
+
+### 7.3 Обучение и аналитика
+
+```bash
+.venv/bin/python train_ltr_full.py             # обучает обе модели, сохраняет в models/ + метрики/графики (mixed)
+.venv/bin/python eval_ltr_i2i.py               # чистая оценка на i2i‑блоках → reports/ltr_*_i2i.json
+.venv/bin/python extra_analytics.py            # дополнительные графики (по умолчанию i2i, *_i2i.png; --mixed для старой выборки)
+.venv/bin/python train_eval_no_coview_i2i.py   # обучить LGBM без coview и посчитать coview‑uplift на i2i
+.venv/bin/python scripts/make_presentation_charts.py  # 5 PNG для презентации (по умолчанию i2i)
+.venv/bin/python analyze_propensity.py         # propensity по типам каруселей
+.venv/bin/python make_example_serps.py         # таблицы примеров выдач для отчёта
+.venv/bin/python build_architecture_diagram.py # перерендерить диаграмму
+.venv/bin/python build_diploma.py              # собрать diploma.docx
+```
+
+Полный прогон `train_ltr_full.py` занимает порядка 6–8 минут на ноутбуке (LightGBM ≈ 8 с, CatBoost ≈ 7.5 мин).
+
+### 7.4 Интерактивное сравнение «наша vs baseline» по одной статье
+
+```python
+# в tj_recs_text_embeddings.ipynb
+our_df, base_df = compare_two_systems_one_article(
+    "<UUID-источника-из-tj_article-и-из-embeddings_cache/ids.txt>",
+    k=12,
+    explore_slots=3,
+    use_ltr=True,
+    use_coview=True,
+    ltr_backend="lgbm",
+    max_candidate_age_days=365.0,
+)
+```
+
+В этом режиме LTR обучается заново под каждый запрос. Для продакшен‑воспроизводимости лучше использовать сохранённую модель из `models/ltr_lgbm.pkl` — пример скоринга есть в `make_example_serps.py`.
+
+---
+
+## 8. Ограничения и следующие шаги
+
+- **Личной персонализации нет** — пайплайн i2i по статьям, без user‑эмбеддингов и сессионных моделей.
+- **Inference batch‑ориентирован**: предполагается, что выдача собирается оффлайн для всех статей и хранится. Серверной HTTP‑части в репозитории нет.
+- **Cold‑start статей частично закрыт fallback'ом**: у ~65 % статей каталога нет coview‑соседей. Если такая статья ещё и свежая (`age < 3`), `serve_carousel.py` автоматически переключается на эвристический скор «sim + priors» (см. §5 «Fallback…»). LTR применяется только когда у источника достаточно данных. Для глубокого решения остаётся batch‑перерасчёт coview‑индекса по мере накопления показов.
+- **Эвристика — это нижняя планка качества**, а не замена LTR. Веса priors (`0.05 / 0.15 / 0.10`) подобраны разумно, но не оптимизированы под метрики. Если доля fallback‑источников вырастет (например, в первые недели после массовой публикации новых статей), стоит дополнительно валидировать качество выдачи на этом сегменте.
+- **Online A/B** — самое естественное продолжение работы: только онлайн позволит честно измерить разницу с продакшен‑системой и победить selection bias. Оффлайн‑метрики (см. §6) — это нижняя оценка реального эффекта.
+- **Дрейф ноутбука и `serve_carousel.py`**: `tj_recs_text_embeddings.ipynb` использовался как песочница для разработки и сравнения «наша vs baseline». Источник истины — `serve_carousel.py`; ноутбук может содержать ad‑hoc эксперименты, не вошедшие в прод‑конфиг.
+- Возможные расширения: sequence‑модели (SASRec / BERT4Rec) при появлении персонализации, ANN‑индекс (HNSW / FAISS) при росте каталога на порядок, периодическое пересчитывание propensity на скользящем окне, distillation от двухбашенной модели для снижения variance таргета, отдельные модели под разные типы каруселей.
+
+Подробное описание подходов, ссылок на литературу, обсуждение selection bias и propensity — в `diploma.docx` (собирается через `build_diploma.py`).

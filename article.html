@@ -1,0 +1,1463 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Как пересобрать личный бюджет за один вечер · Т—Ж</title>
+  <meta name="description" content="Простой способ навести порядок в финансах: четыре корзины, две цели, автоматизация. Без таблиц на сорок строк." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ===================== Tokens (синхронизировано с главной) ===================== */
+    :root{
+      --bg:#F2F3F5;
+      --surface:#FFFFFF;
+      --surface-2:#F7F8FA;
+      --ink:#15171B;
+      --ink-2:#4A4D55;
+      --ink-3:#8A8D95;
+      --line:rgba(21,23,27,.08);
+      --line-2:rgba(21,23,27,.04);
+      --yellow:#FFDD2D;
+      --yellow-2:#FFCF00;
+      --on-yellow:#15171B;
+      --link:#1E73E8;
+      --maxw:1340px;
+      --sans:"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --r-card:18px;
+      --r-pill:999px;
+      --top-h:68px;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0E1014;
+        --surface:#16191F;
+        --surface-2:#1B1F26;
+        --ink:#F2F3F5;
+        --ink-2:#B8BAC0;
+        --ink-3:#6E7178;
+        --line:rgba(242,243,245,.08);
+        --line-2:rgba(242,243,245,.04);
+        --link:#5BA0F2;
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:var(--sans);background:var(--bg);color:var(--ink);
+      -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+      line-height:1.5;font-size:15.5px;overflow-x:hidden;
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+    .mono{font-family:var(--mono);font-feature-settings:"tnum" 1;letter-spacing:.02em}
+    .full-bleed{width:100vw;margin-left:calc(50% - 50vw)}
+
+    /* ===================== Top bar ===================== */
+    .topbar{position:sticky;top:0;z-index:60;background:#15171B;color:#FFFFFF;height:var(--top-h)}
+    .topbar-inner{display:flex;align-items:center;gap:24px;height:100%}
+    .brand-block{display:inline-flex;align-items:baseline;gap:10px}
+    .wordmark{
+      font-weight:900;font-size:clamp(28px, 3vw, 38px);
+      line-height:1;letter-spacing:-.04em;color:#FFFFFF;
+      display:inline-flex;align-items:center;gap:12px;
+    }
+    .wordmark::before{
+      content:"";width:.32em;height:.32em;border-radius:50%;background:var(--yellow);
+      flex:0 0 auto;transform:translateY(-.04em);
+    }
+    .brand-sub{font-family:var(--mono);font-size:11px;color:#8A8D95;letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+    .top-nav{display:flex;gap:22px;margin-left:14px}
+    .top-nav a{font-size:14px;color:#B8BAC0;font-weight:500}
+    .top-nav a:hover{color:#FFFFFF}
+    .top-spacer{flex:1}
+    .top-time{font-family:var(--mono);font-size:11.5px;color:#6E7178;letter-spacing:.04em}
+    .icon-btn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#B8BAC0;border:1px solid rgba(255,255,255,.08);transition:all .15s ease}
+    .icon-btn:hover{color:#FFFFFF;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.04)}
+    .write-btn{
+      display:inline-flex;align-items:center;gap:8px;
+      background:var(--yellow);color:var(--on-yellow);
+      padding:10px 18px;border-radius:var(--r-pill);font-size:13.5px;font-weight:700;
+      transition:transform .15s ease, background .15s ease;
+    }
+    .write-btn:hover{background:var(--yellow-2);transform:translateY(-1px)}
+
+    /* ===================== Marquee ===================== */
+    .marquee{background:var(--yellow);color:var(--on-yellow);padding:11px 0;overflow:hidden;border-bottom:1px solid rgba(0,0,0,.08)}
+    .marquee-track{display:flex;gap:48px;white-space:nowrap;animation:marquee 52s linear infinite;width:max-content}
+    .marquee-item{display:inline-flex;align-items:center;gap:14px;font-size:13.5px;font-weight:600}
+    .marquee-item .dot{width:6px;height:6px;border-radius:50%;background:var(--on-yellow);display:inline-block;flex:0 0 6px}
+    .marquee-item .live{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--on-yellow);color:var(--yellow);
+      padding:3px 9px;border-radius:6px;
+      font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    }
+    .marquee-item .live::before{content:"";width:6px;height:6px;border-radius:50%;background:#FF5252}
+    @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    /* ===================== Topics ===================== */
+    .topics{
+      padding:14px 0;position:sticky;top:var(--top-h);z-index:50;
+      background:color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter:saturate(160%) blur(12px);-webkit-backdrop-filter:saturate(160%) blur(12px);
+      border-bottom:1px solid var(--line);
+    }
+    .topics-inner{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;align-items:center}
+    .topics-inner .label{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-right:6px;font-weight:500}
+    .topics-inner a{color:var(--ink-2);font-weight:500;padding:6px 0;position:relative}
+    .topics-inner a:hover{color:var(--ink)}
+    .topics-inner a.active{color:var(--ink);font-weight:600}
+    .topics-inner a.active::after{content:"";position:absolute;left:-3px;right:-3px;bottom:-2px;height:7px;background:var(--yellow);z-index:-1;border-radius:3px;transform:translateY(2px)}
+
+    /* ===================== Layout (sidebar + article) ===================== */
+    .layout{
+      display:grid;grid-template-columns:240px 1fr;
+      gap:32px;align-items:start;padding:24px 0 56px;
+    }
+
+    /* ===================== Cards ===================== */
+    .card{background:var(--surface);border-radius:var(--r-card);padding:20px}
+    .card-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 16px}
+    .card-h h3{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0}
+    .card-h .more{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;font-weight:500}
+    .card-h .more:hover{color:var(--ink)}
+    .card-h .count{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.08em;font-weight:500}
+
+    /* ===================== Sidebar (categories) ===================== */
+    .sidebar .cat-list{display:grid;gap:2px}
+    .cat-item{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:10px;font-size:14px;color:var(--ink);font-weight:500;transition:background .12s ease}
+    .cat-item:hover{background:var(--surface-2)}
+    .cat-icon{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#FFFFFF;flex:0 0 26px}
+
+    /* ===================== Breadcrumbs ===================== */
+    .crumbs{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+      font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;
+      margin-bottom:14px;
+    }
+    .crumbs a{color:var(--ink-2);font-weight:500}
+    .crumbs a:hover{color:var(--ink)}
+    .crumbs .sep{opacity:.5}
+
+    /* ===================== Article ===================== */
+    .article{display:flex;flex-direction:column;gap:24px;min-width:0;max-width:100%}
+    .article-hero{background:var(--surface);border-radius:var(--r-card);overflow:hidden;padding:32px 32px 28px}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--yellow);color:var(--on-yellow);
+      padding:4px 10px;border-radius:var(--r-pill);
+      font-family:var(--mono);font-size:10.5px;font-weight:700;
+      letter-spacing:.06em;text-transform:uppercase;
+    }
+    .tag-ghost{background:var(--surface-2);color:var(--ink-2)}
+    .article-badges{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+    .article-h1{
+      font-weight:800;font-size:clamp(30px, 3.4vw, 48px);
+      line-height:1.04;letter-spacing:-.025em;margin:0 0 18px;max-width:18ch;
+    }
+    .article-h1 .hl{
+      background:var(--yellow);color:var(--on-yellow);
+      padding:0 .12em .04em;
+      box-decoration-break:clone;-webkit-box-decoration-break:clone;
+    }
+    .article-lead{
+      font-size:clamp(16.5px, 1.3vw, 20px);
+      color:var(--ink-2);margin:0 0 28px;max-width:60ch;line-height:1.4;
+    }
+    .byline-rich{
+      display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;
+      padding-top:18px;border-top:1px solid var(--line);
+    }
+    .author{display:flex;align-items:center;gap:12px}
+    .author-photo{
+      width:42px;height:42px;border-radius:50%;background:var(--surface-2);
+      overflow:hidden;flex:0 0 42px;
+    }
+    .author-photo img{width:100%;height:100%;object-fit:cover}
+    .author-name{font-size:14.5px;font-weight:700;line-height:1.2}
+    .author-meta{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em;margin-top:2px}
+    .article-stats{display:flex;gap:6px;flex-wrap:wrap}
+    .stat-pill{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 11px;border-radius:var(--r-pill);
+      background:var(--surface-2);color:var(--ink-2);
+      font-family:var(--mono);font-size:11.5px;font-weight:600;
+    }
+    .stat-pill svg{flex:0 0 auto}
+
+    /* Cover image */
+    .article-cover{
+      border-radius:var(--r-card);overflow:hidden;
+      aspect-ratio:16/9;background:var(--surface-2);
+    }
+    .article-cover img{width:100%;height:100%;object-fit:cover;display:block}
+
+    /* ===================== Article body ===================== */
+    .article-body{
+      background:var(--surface);border-radius:var(--r-card);
+      padding:36px clamp(28px, 4vw, 56px);
+      max-width:none;
+    }
+    .article-body > *{max-width:680px;margin-left:auto;margin-right:auto}
+    .article-body p{
+      font-size:17.5px;line-height:1.62;color:var(--ink);
+      margin:0 0 18px;
+    }
+    .article-body p:first-of-type::first-letter{
+      font-weight:800;font-size:1.05em;
+    }
+    .article-body h2{
+      font-size:clamp(22px, 2.2vw, 30px);font-weight:800;
+      letter-spacing:-.02em;margin:44px 0 16px;line-height:1.15;
+    }
+    .article-body h3{
+      font-size:19px;font-weight:700;letter-spacing:-.01em;
+      margin:32px 0 12px;
+    }
+    .article-body strong{font-weight:700}
+    .article-body a:not(.tip):not(.btn){
+      color:var(--link);
+      border-bottom:1.5px solid color-mix(in srgb, var(--link) 30%, transparent);
+      padding-bottom:.5px;
+    }
+    .article-body a:hover{
+      border-bottom-color:var(--link);
+    }
+    .article-body ol, .article-body ul{
+      padding:0;margin:0 0 22px;list-style:none;
+    }
+    .article-body ol li, .article-body ul li{
+      position:relative;padding:6px 0 6px 38px;
+      font-size:17px;line-height:1.55;
+    }
+    .article-body ol{counter-reset:item}
+    .article-body ol li{counter-increment:item}
+    .article-body ol li::before{
+      content:counter(item);
+      position:absolute;left:0;top:8px;
+      width:26px;height:26px;border-radius:8px;
+      background:var(--yellow);color:var(--on-yellow);
+      font-family:var(--mono);font-size:13px;font-weight:700;
+      display:grid;place-items:center;
+    }
+    .article-body ul li::before{
+      content:"";position:absolute;left:11px;top:18px;
+      width:6px;height:6px;border-radius:50%;background:var(--ink);
+    }
+
+    /* Inline link with hover tip card */
+    .tip{position:relative;display:inline-block}
+    .tip > a{
+      color:var(--link);
+      background:color-mix(in srgb, var(--link) 14%, transparent);
+      padding:1px 4px;border-radius:4px;
+      border-bottom:none !important;
+      cursor:help;
+    }
+    .tip > a:hover{background:color-mix(in srgb, var(--link) 22%, transparent)}
+    .tip-card{
+      position:absolute;top:calc(100% + 10px);left:50%;transform:translate(-50%, 6px);
+      width:340px;
+      background:var(--surface);
+      border-radius:16px;
+      box-shadow:0 16px 48px rgba(15,17,22,.18), 0 2px 8px rgba(15,17,22,.06);
+      padding:18px;
+      opacity:0;visibility:hidden;
+      transition:opacity .18s ease, transform .18s ease, visibility .18s;
+      z-index:50;
+    }
+    .tip-card::before{
+      content:"";position:absolute;
+      top:-7px;left:50%;transform:translateX(-50%) rotate(45deg);
+      width:14px;height:14px;background:var(--surface);
+      box-shadow:-2px -2px 4px rgba(15,17,22,.04);
+    }
+    .tip:hover .tip-card,
+    .tip:focus-within .tip-card{
+      opacity:1;visibility:visible;transform:translate(-50%, 0);
+    }
+    .tip-card-h{
+      display:block;font-size:13.5px;font-weight:700;
+      margin:0 0 12px;letter-spacing:-.005em;color:var(--ink);
+    }
+    .tip-rec{
+      display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;
+      padding:8px 6px;border-radius:10px;
+      font-size:13px;font-weight:500;line-height:1.32;color:var(--ink) !important;
+      background:transparent !important;border:none !important;
+      transition:background .12s ease;
+    }
+    .tip-rec:hover{background:var(--surface-2)}
+    .tip-rec .thumb{
+      width:44px;height:44px;border-radius:10px;background:var(--surface-2);
+      overflow:hidden;flex:0 0 44px;
+    }
+    .tip-rec .thumb img{width:100%;height:100%;object-fit:cover}
+
+    /* Pull quote inside article */
+    .pull-quote{
+      max-width:760px !important;margin:36px auto !important;
+      background:var(--yellow);color:var(--on-yellow);
+      border-radius:18px;padding:32px 36px;
+      position:relative;
+    }
+    .pull-quote .qmark{
+      position:absolute;left:18px;top:0;
+      font-size:80px;font-weight:900;line-height:1;color:var(--on-yellow);opacity:.2;
+    }
+    .pull-quote blockquote{
+      margin:0;font-size:clamp(20px, 2.2vw, 28px);font-weight:700;
+      line-height:1.18;letter-spacing:-.015em;padding-left:38px;
+    }
+    .pull-quote .cite{
+      margin-top:14px;padding-left:38px;
+      font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+    }
+
+    /* Inline image */
+    .figure{
+      max-width:760px !important;margin:32px auto !important;
+    }
+    .figure img{
+      width:100%;border-radius:14px;display:block;
+      aspect-ratio:16/9;object-fit:cover;background:var(--surface-2);
+    }
+    .figure figcaption{
+      margin-top:10px;font-size:13px;color:var(--ink-3);text-align:center;
+      font-family:var(--mono);letter-spacing:.04em;
+    }
+
+    /* ===================== Mini onboarding questions ===================== */
+    .miniq{
+      max-width:680px !important;margin:32px auto !important;
+      background:var(--surface);border:1px solid var(--line);
+      border-radius:14px;padding:18px 20px;
+      position:relative;
+    }
+    .miniq-h{
+      display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px;
+    }
+    .miniq-tag{
+      display:inline-flex;align-items:center;gap:6px;
+      font-family:var(--mono);font-size:10px;font-weight:700;
+      letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+      background:color-mix(in srgb, var(--yellow) 50%, transparent);
+      padding:3px 7px;border-radius:5px;
+    }
+    .miniq-tag::before{
+      content:"";width:5px;height:5px;border-radius:50%;background:var(--on-yellow);flex:0 0 5px;
+    }
+    .miniq-q{
+      font-size:15px;font-weight:700;letter-spacing:-.005em;color:var(--ink);
+      line-height:1.3;
+    }
+    .miniq-opts{
+      display:flex;flex-wrap:wrap;gap:6px;
+    }
+    .miniq-chip{
+      position:relative;display:inline-flex;align-items:center;
+      padding:8px 13px;border-radius:var(--r-pill);
+      background:var(--surface-2);color:var(--ink-2);
+      font-size:13px;font-weight:500;cursor:pointer;
+      border:1px solid transparent;
+      transition:background .12s ease, color .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .miniq-chip input{
+      position:absolute;opacity:0;pointer-events:none;
+      width:0;height:0;
+    }
+    .miniq-chip:hover{background:var(--surface);border-color:var(--line)}
+    .miniq-chip:has(input:checked){
+      background:var(--yellow);color:var(--on-yellow);
+      border-color:var(--yellow);font-weight:600;
+    }
+    .miniq-thanks{
+      display:none;align-items:center;gap:8px;
+      margin-top:12px;padding-top:12px;
+      border-top:1px solid var(--line);
+      font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+      color:var(--ink-3);
+    }
+    .miniq.answered .miniq-thanks{display:flex}
+    .miniq-thanks .check{
+      width:14px;height:14px;border-radius:50%;
+      background:var(--yellow);color:var(--on-yellow);
+      display:grid;place-items:center;flex:0 0 14px;
+    }
+    .miniq-thanks .change{
+      margin-left:auto;background:transparent;border:0;
+      font:inherit;font-family:var(--mono);font-size:11px;
+      color:var(--ink-3);letter-spacing:.04em;cursor:pointer;
+      text-decoration:underline;
+    }
+    .miniq-thanks .change:hover{color:var(--ink)}
+
+    /* TL;DR callout */
+    .tldr{
+      max-width:760px !important;margin:36px auto 0 !important;
+      background:var(--surface-2);border-radius:14px;padding:24px 28px;
+      border-left:4px solid var(--yellow);
+    }
+    .tldr h4{
+      font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+      margin:0 0 12px;color:var(--ink-3);
+    }
+    .tldr ul{padding:0;margin:0;list-style:none;display:grid;gap:8px}
+    .tldr li{
+      padding-left:24px;position:relative;
+      font-size:15.5px;line-height:1.5;color:var(--ink);
+    }
+    .tldr li::before{
+      content:"→";position:absolute;left:0;top:0;color:var(--yellow);font-weight:800;
+    }
+
+    /* ===================== Article footer (tags + reactions + author) ===================== */
+    .article-footer{display:grid;gap:18px}
+    .article-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .article-tags .label{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;font-weight:500;margin-right:6px}
+    .article-tags a{
+      padding:6px 12px;background:var(--surface);border-radius:var(--r-pill);
+      font-size:13px;color:var(--ink-2);font-weight:500;
+    }
+    .article-tags a:hover{background:var(--ink);color:var(--surface)}
+    .reactions{
+      background:var(--surface);border-radius:var(--r-card);padding:18px 22px;
+      display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    }
+    .react-btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:9px 14px;border-radius:var(--r-pill);
+      background:var(--surface-2);color:var(--ink-2);
+      font-size:13.5px;font-weight:600;
+      transition:all .15s ease;cursor:pointer;border:0;font-family:inherit;
+    }
+    .react-btn:hover{background:var(--ink);color:var(--surface)}
+    .react-btn .count{font-family:var(--mono);font-size:12px}
+    .react-btn.primary{background:var(--yellow);color:var(--on-yellow)}
+    .react-btn.primary:hover{background:var(--yellow-2);color:var(--on-yellow)}
+    .react-spacer{flex:1}
+
+    .author-card{
+      background:var(--surface);border-radius:var(--r-card);padding:22px;
+      display:grid;grid-template-columns:64px 1fr auto;gap:18px;align-items:center;
+    }
+    .author-card .photo{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--surface-2);flex:0 0 64px}
+    .author-card .photo img{width:100%;height:100%;object-fit:cover}
+    .author-card .name{font-size:16px;font-weight:700;letter-spacing:-.005em}
+    .author-card .role{font-size:13px;color:var(--ink-2);margin-top:2px}
+    .author-card .articles{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.06em;margin-top:6px}
+    .author-card .follow{
+      background:var(--ink);color:var(--surface);border:0;
+      padding:10px 18px;border-radius:var(--r-pill);
+      font:inherit;font-weight:600;font-size:13px;cursor:pointer;
+    }
+
+    /* ===================== Recommendations carousel ===================== */
+    .reco{
+      background:var(--surface);border-radius:var(--r-card);padding:24px;
+      position:relative;
+    }
+    .reco-card .context{
+      font-size:12.5px;line-height:1.4;color:var(--ink-2);
+      margin:0;padding:8px 10px;
+      background:color-mix(in srgb, var(--yellow) 22%, transparent);
+      border-radius:8px;font-style:italic;
+    }
+    .reco-card .context::before{
+      content:attr(data-rel);display:inline-block;
+      font-family:var(--mono);font-size:9px;font-weight:700;
+      letter-spacing:.14em;text-transform:uppercase;
+      background:var(--yellow);color:var(--on-yellow);
+      padding:2px 6px;border-radius:4px;
+      margin-right:6px;font-style:normal;vertical-align:1px;
+    }
+    .reco-h{
+      display:flex;justify-content:space-between;align-items:baseline;
+      margin:0 0 18px;
+    }
+    .reco-h h3{
+      font-size:clamp(18px, 1.8vw, 22px);font-weight:800;letter-spacing:-.015em;margin:0;
+    }
+    .reco-h .nav{display:flex;gap:6px}
+    .reco-h .nav button{
+      width:34px;height:34px;border-radius:50%;
+      background:var(--surface-2);border:0;color:var(--ink);
+      cursor:pointer;display:grid;place-items:center;
+      transition:all .15s ease;
+    }
+    .reco-h .nav button:hover{background:var(--ink);color:var(--surface)}
+    .reco-scroll{
+      display:grid;grid-auto-flow:column;grid-auto-columns:minmax(260px, 280px);
+      gap:16px;overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      padding-bottom:6px;
+      scrollbar-width:thin;
+    }
+    .reco-scroll::-webkit-scrollbar{height:6px}
+    .reco-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+    .reco-card{
+      scroll-snap-align:start;
+      background:var(--surface-2);border-radius:14px;overflow:hidden;
+      display:flex;flex-direction:column;
+      transition:transform .25s ease;
+    }
+    .reco-card:hover{transform:translateY(-3px)}
+    .reco-card .cover{aspect-ratio:16/10;overflow:hidden;background:var(--surface);position:relative}
+    .reco-card .cover img{width:100%;height:100%;object-fit:cover;transition:transform 1s cubic-bezier(.2,.6,.2,1)}
+    .reco-card:hover .cover img{transform:scale(1.04)}
+    .reco-card .cover .age-tag{
+      position:absolute;right:10px;bottom:10px;
+      background:rgba(15,17,22,.78);color:#FFF;
+      padding:3px 7px;border-radius:6px;
+      font-family:var(--mono);font-size:10.5px;font-weight:700;
+    }
+    .reco-card .body{padding:14px 16px 12px;flex:1;display:flex;flex-direction:column;gap:8px}
+    .reco-card h4{
+      font-size:15px;font-weight:700;line-height:1.28;letter-spacing:-.005em;margin:0;
+    }
+    .reco-card .stats{
+      display:flex;gap:14px;color:var(--ink-3);font-family:var(--mono);font-size:11.5px;
+      margin-top:auto;padding-top:6px;align-items:center;
+    }
+    .reco-card .stats span{display:inline-flex;align-items:center;gap:4px}
+    .reco-card .stats svg{flex:0 0 auto;color:var(--ink-3)}
+
+    /* ===================== Inline carousel (наша i2i система) ===================== */
+    .our-carousel{
+      margin:40px 0;padding:24px;
+      background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+      border:1px solid var(--line);border-radius:var(--r-card);
+      position:relative;
+    }
+    /* Вылазим за паддинги .article-body, чтобы быть по ширине как нижние .reco */
+    .article-body > .our-carousel{
+      max-width:none;
+      margin-left:calc(-1 * clamp(28px, 4vw, 56px));
+      margin-right:calc(-1 * clamp(28px, 4vw, 56px));
+    }
+    @media (max-width: 768px){
+      .article-body > .our-carousel{margin-left:-18px;margin-right:-18px}
+    }
+    .our-carousel .reco-h{margin:0 0 12px}
+    .our-carousel .reco-h .title-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .our-carousel .reco-h h3{font-size:clamp(17px, 1.6vw, 20px);margin:0;font-weight:800;letter-spacing:-.015em}
+    .our-carousel .auto-badge{
+      display:inline-flex;align-items:center;gap:7px;
+      font-family:var(--mono);font-size:10px;font-weight:700;
+      letter-spacing:.14em;text-transform:uppercase;
+      background:var(--ink);color:var(--surface);
+      padding:4px 10px 4px 8px;border-radius:var(--r-pill);
+    }
+    .our-carousel .auto-badge .pulse{
+      width:6px;height:6px;border-radius:50%;background:var(--yellow);
+      box-shadow:0 0 0 0 rgba(255,221,45,.6);
+      animation:our-pulse 1.8s ease-out infinite;
+    }
+    @keyframes our-pulse{
+      0%{box-shadow:0 0 0 0 rgba(255,221,45,.55)}
+      60%{box-shadow:0 0 0 7px rgba(255,221,45,0)}
+      100%{box-shadow:0 0 0 0 rgba(255,221,45,0)}
+    }
+    .our-legend{
+      display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+      font-size:12.5px;color:var(--ink-3);
+      margin:0 0 16px;
+    }
+    .our-legend .item{display:inline-flex;align-items:center;gap:7px}
+    .our-legend .swatch{width:9px;height:9px;border-radius:3px;flex:0 0 9px}
+    .our-legend .swatch.similar{background:var(--ink-3);opacity:.55}
+    .our-legend .swatch.explore{background:var(--yellow);outline:1px solid color-mix(in srgb, var(--yellow-2) 70%, transparent)}
+    .our-legend .sep{width:1px;height:12px;background:var(--line);display:inline-block}
+    .our-carousel .reco-card.explore{
+      background:linear-gradient(180deg, color-mix(in srgb, var(--yellow) 12%, var(--surface-2)) 0%, var(--surface-2) 75%);
+      outline:1px solid color-mix(in srgb, var(--yellow) 38%, transparent);
+      outline-offset:-1px;
+    }
+    .our-carousel .reco-card.explore .cover::after{
+      content:"";position:absolute;inset:0;
+      background:linear-gradient(180deg, rgba(255,221,45,.18) 0%, rgba(255,221,45,0) 50%);
+      pointer-events:none;
+    }
+    .our-carousel .reco-card .pos-tag{
+      position:absolute;left:10px;top:10px;
+      background:rgba(15,17,22,.78);color:#FFF;
+      padding:3px 7px;border-radius:6px;
+      font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;
+      z-index:2;
+    }
+    .our-carousel .reco-card.explore .explore-tag{
+      position:absolute;right:10px;top:10px;
+      background:var(--yellow);color:var(--on-yellow);
+      padding:3px 8px;border-radius:6px;
+      font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+      z-index:2;
+    }
+
+    /* ===================== Newsletter ===================== */
+    .newsletter{background:var(--yellow);color:var(--on-yellow);padding:clamp(56px, 7vw, 96px) 0;position:relative;overflow:hidden}
+    .nl-inner{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(32px, 5vw, 72px);align-items:end}
+    .nl-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+    .newsletter h2{font-weight:800;font-size:clamp(32px, 4.6vw, 64px);line-height:1;letter-spacing:-.03em;margin:14px 0 16px}
+    .newsletter h2 em{font-style:italic;font-weight:800}
+    .newsletter p{max-width:42ch;margin:0;font-size:15.5px;font-weight:500;color:var(--on-yellow)}
+    .nl-form{display:flex;align-items:center;background:var(--on-yellow);border-radius:var(--r-pill);padding:6px}
+    .nl-form input{flex:1;background:transparent;border:0;color:#FFFFFF;padding:14px 18px;font:inherit;font-size:15px;outline:none}
+    .nl-form input::placeholder{color:rgba(255,255,255,.45)}
+    .nl-form button{background:var(--yellow);color:var(--on-yellow);border:0;padding:13px 22px;font:inherit;font-size:13.5px;font-weight:700;border-radius:var(--r-pill);cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s ease, background .15s ease}
+    .nl-form button:hover{background:var(--yellow-2);transform:translateY(-1px)}
+    .nl-perks{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em}
+    .nl-perks span{display:inline-flex;align-items:center;gap:6px}
+    .nl-perks span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--on-yellow)}
+
+    /* ===================== Footer ===================== */
+    footer{padding:56px 0 28px}
+    .foot-wordmark{
+      font-weight:900;font-size:clamp(120px, 28vw, 380px);line-height:.82;letter-spacing:-.06em;
+      color:var(--ink);margin:0 0 28px;display:flex;justify-content:space-between;align-items:flex-end;
+    }
+    .foot-wordmark span:first-child::after{
+      content:"";display:inline-block;width:.18em;height:.18em;border-radius:50%;
+      background:var(--yellow);margin-left:.06em;vertical-align:.05em;
+    }
+    .foot-wordmark .since{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;font-weight:500;max-width:18ch;text-align:right;line-height:1.5}
+    .foot-cols{display:grid;grid-template-columns:repeat(4, 1fr);gap:32px;padding-top:28px;border-top:1px solid var(--line);font-size:13.5px}
+    .foot-cols h5{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 12px;color:var(--ink-3);font-weight:500}
+    .foot-cols a{color:var(--ink-2);display:block;padding:5px 0;font-weight:500}
+    .foot-cols a:hover{color:var(--ink)}
+    .foot-bottom{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;color:var(--ink-3);font-size:12px}
+
+    /* ===================== Responsive ===================== */
+    @media (max-width: 1024px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .article-hero{padding:24px 22px}
+    }
+    @media (max-width: 760px){
+      .top-nav{display:none}
+      .top-time{display:none}
+      .nl-inner{grid-template-columns:1fr;align-items:start;gap:28px}
+      .foot-cols{grid-template-columns:1fr 1fr}
+      .foot-wordmark{flex-direction:column;align-items:flex-start;gap:16px}
+      .foot-wordmark .since{text-align:left}
+      .icon-btn:not(.search){display:none}
+      .author-card{grid-template-columns:1fr;text-align:left}
+      .tip-card{width:280px}
+      .article-body{padding:24px 18px}
+      .article-body p, .article-body ol li, .article-body ul li{font-size:16px}
+    }
+    @media (max-width: 480px){
+      .container{padding:0 16px}
+      .topbar-inner{gap:14px}
+      .brand-sub{display:none}
+      .write-btn{padding:9px 14px;font-size:12.5px}
+      .pull-quote{padding:24px 22px}
+      .pull-quote blockquote{padding-left:0;font-size:20px}
+      .pull-quote .qmark{display:none}
+      .pull-quote .cite{padding-left:0}
+      .miniq{padding:16px}
+      .miniq-q{font-size:14.5px}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand-block">
+        <a href="index.html" class="wordmark">Т—Ж</a>
+        <span class="brand-sub">медиа</span>
+      </div>
+      <nav class="top-nav" aria-label="Главное">
+        <a href="index.html#read">Для вас</a>
+        <a href="index.html#school">Учебник</a>
+        <a href="index.html#newsletter">Подписка</a>
+        <a href="index.html#discussed">Сообщество</a>
+      </nav>
+      <div class="top-spacer"></div>
+      <span class="top-time">26.04.26 · 19:42 MSK</span>
+      <a class="icon-btn search" aria-label="Поиск" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></a>
+      <a class="icon-btn" aria-label="Уведомления" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 7 3 9H3c0-2 3-2 3-9z"/><path d="M10 21a2 2 0 004 0"/></svg></a>
+      <a class="write-btn" href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Написать</a>
+    </div>
+  </header>
+
+  <!-- ===== Marquee ===== -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span class="marquee-item"><span class="live">Сейчас</span><b>4 новых материала за час</b></span>
+      <span class="marquee-item"><span class="dot"></span>Ставка ЦБ снова без изменений — что это значит для вкладов</span>
+      <span class="marquee-item"><span class="dot"></span>Налоги для самозанятых · разбор</span>
+      <span class="marquee-item"><span class="dot"></span>Дневник трат маркетолога из Казани</span>
+      <span class="marquee-item"><span class="dot"></span>Грузия весной · маршрут на 7 дней</span>
+      <span class="marquee-item"><span class="live">Сейчас</span><b>4 новых материала за час</b></span>
+      <span class="marquee-item"><span class="dot"></span>Ставка ЦБ снова без изменений — что это значит для вкладов</span>
+      <span class="marquee-item"><span class="dot"></span>Налоги для самозанятых · разбор</span>
+      <span class="marquee-item"><span class="dot"></span>Дневник трат маркетолога из Казани</span>
+      <span class="marquee-item"><span class="dot"></span>Грузия весной · маршрут на 7 дней</span>
+    </div>
+  </div>
+
+  <!-- ===== Topics ===== -->
+  <nav class="topics" aria-label="Темы">
+    <div class="container topics-inner">
+      <span class="label">Темы / 09</span>
+      <a href="index.html">Главная</a>
+      <a class="active" href="#">Деньги</a>
+      <a href="#">Жильё</a>
+      <a href="#">Здоровье</a>
+      <a href="#">Семья</a>
+      <a href="#">Карьера</a>
+      <a href="#">Путешествия</a>
+      <a href="#">Право</a>
+      <a href="#">Авто</a>
+    </div>
+  </nav>
+
+  <!-- ===== Layout ===== -->
+  <div class="container">
+    <div class="layout">
+
+      <!-- Sidebar (categories) -->
+      <aside class="sidebar">
+        <div class="card">
+          <div class="card-h"><h3>Разделы</h3><span class="count mono">/ 16</span></div>
+          <div class="cat-list">
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#F4C20D"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="2.5" width="9" height="11" rx="1.5"/><path d="M5.5 5.5h5"/><circle cx="5.8" cy="8" r=".4" fill="currentColor"/><circle cx="8" cy="8" r=".4" fill="currentColor"/><circle cx="10.2" cy="8" r=".4" fill="currentColor"/></svg></span>Калькуляторы</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#A77BFF"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="12" height="7" rx="3.2"/><path d="M5 8.5h2M6 7.5v2"/></svg></span>Игры</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#4D9FFF"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5.5"/><path d="M7 6l3 2-3 2z" fill="currentColor"/></svg></span>Подкасты и видео</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#FF7AB6"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><path d="M2.5 4.5l5.5 4 5.5-4"/></svg></span>Письма</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#5DCC73"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h10l-1 7H4z"/><path d="M5.5 5V3.5a2.5 2.5 0 015 0V5"/></svg></span>Шопинг</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#50C8C0"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v12M3 14h10"/></svg></span>Сравнятор</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#FF6B6B"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3.5v9M3.5 8h9"/></svg></span>Аптечка</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#9CA3AF"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M5 6h6M5 8.5h6M5 11h4"/></svg></span>Новости</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#7B8BF0"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3h7a2 2 0 012 2v8H5a2 2 0 01-2-2V3z"/></svg></span>Дневники трат</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#4CAF50"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 11.5l3.5-3.5 2.5 2.5L13 5.5"/><path d="M9.5 5.5H13v3.5"/></svg></span>Инвестиции</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#4A6CF7"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2.5l5 2v3.5c0 3-2 5-5 6-3-1-5-3-5-6V4.5l5-2z"/></svg></span>Право</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#F4A261"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 7.5L8 3l5.5 4.5V13H2.5V7.5z"/></svg></span>Недвижимость</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#E76F51"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 13.5C5 11 2.5 9 2.5 6.5c0-2 1.5-3 3-3 1.2 0 2 .6 2.5 1.5.5-.9 1.3-1.5 2.5-1.5 1.5 0 3 1 3 3 0 2.5-2.5 4.5-5.5 7z"/></svg></span>Медицина и здоровье</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#2EC4B6"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 9l4-1 5-5 1.5 1.5-5 5-1 4-2-2-2.5-2.5z"/></svg></span>Путешествия</a>
+            <a class="cat-item" href="#"><span class="cat-icon" style="background:#06A77D"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6l6-2.5L14 6l-6 2.5L2 6z"/><path d="M5 8v3c0 .8 1.5 1.5 3 1.5s3-.7 3-1.5V8"/></svg></span>Образование</a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ===== Article ===== -->
+      <article class="article">
+
+        <!-- Hero -->
+        <div class="article-hero">
+          <div class="crumbs">
+            <a href="index.html">Главная</a>
+            <span class="sep">/</span>
+            <a href="#">Деньги</a>
+            <span class="sep">/</span>
+            <a href="#">Бюджет</a>
+          </div>
+          <div class="article-badges">
+            <span class="tag">Деньги</span>
+            <span class="tag tag-ghost">Выбор редакции</span>
+            <span class="mono" style="font-size:11px;color:var(--ink-3);letter-spacing:.04em">9 минут чтения</span>
+          </div>
+          <h1 class="article-h1">Как пересобрать <span class="hl">личный&nbsp;бюджет</span> за один вечер</h1>
+          <p class="article-lead">Простой способ навести порядок в финансах: разделить деньги на четыре корзины, поставить две цели и автоматизировать всё, что можно. Без таблиц на сорок строк.</p>
+          <div class="byline-rich">
+            <div class="author">
+              <span class="author-photo"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=70" alt="" /></span>
+              <div>
+                <div class="author-name">Анна Левченко</div>
+                <div class="author-meta">РЕДАКТОР «ДЕНЕГ» · 26.04.26, 19:00</div>
+              </div>
+            </div>
+            <div class="article-stats">
+              <span class="stat-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>3.2K</span>
+              <span class="stat-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>48</span>
+              <span class="stat-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>712</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cover -->
+        <div class="article-cover">
+          <img src="https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=1600&q=80" alt="Открытая записная книжка с ручкой" />
+        </div>
+
+        <!-- Body -->
+        <div class="article-body">
+          <p>Большинство финансовых советов начинаются с фразы «заведите таблицу и записывайте каждую трату». На второй неделе таблица обрастает категориями, на третьей — вы её бросаете. Я ходила по этому кругу пять лет, пока не поняла одну простую вещь: бюджет — это не учёт, а способ принимать решения.</p>
+
+          <p>Идея простая. Вместо того чтобы <span class="tip"><a href="#" tabindex="0">контролировать каждую копейку</a><span class="tip-card" role="tooltip"><span class="tip-card-h">Рекомендованные статьи</span><a class="tip-rec" href="#"><span class="thumb"><img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=200&q=70" alt="" /></span><span>Как мы учётом разорили семейный мир — и как починили</span></a><a class="tip-rec" href="#"><span class="thumb"><img src="https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=200&q=70" alt="" /></span><span>Топ-5 приложений для учёта трат: обзор и сравнение</span></a><a class="tip-rec" href="#"><span class="thumb"><img src="https://images.unsplash.com/photo-1444653614773-995cb1ef9efa?auto=format&fit=crop&w=200&q=70" alt="" /></span><span>Почему таблицы расходов не работают для большинства</span></a></span></span>, вы один раз раскладываете деньги на четыре корзины — и дальше живёте в рамках. Каждый месяц перекладка занимает 10 минут, потому что её делает банк, а не вы.</p>
+
+          <h2>Четыре корзины</h2>
+
+          <p>Корзин ровно четыре, потому что больше не нужно — мы проверяли:</p>
+
+          <ol>
+            <li><strong>Обязательное</strong> — аренда, кредиты, подписки, продукты, транспорт. Сюда идёт примерно 50% дохода.</li>
+            <li><strong>Цели</strong> — то, на что вы копите: подушка, путешествие, квартира. От 15 до 25%.</li>
+            <li><strong>Свободное</strong> — кафе, одежда, развлечения. 20—30%.</li>
+            <li><strong>Резерв</strong> — деньги, которые можно потратить «прямо сейчас», если сломается холодильник. 5—10%.</li>
+          </ol>
+
+          <p>Цифры — ориентировочные. Главная мысль: в каждой корзине есть свой потолок, и когда он закончится, вы либо ждёте следующего месяца, либо сознательно перекладываете из другой корзины.</p>
+
+          <h2>Как разложить деньги по корзинам</h2>
+
+          <p>Откройте основной счёт и заведите три накопительных. В большинстве банков это бесплатно. Назовите их по корзинам — у Тинькофф, например, можно дать счёту имя.</p>
+
+          <!-- Mini onboarding · topic preference -->
+          <aside class="miniq" data-key="topic">
+            <div class="miniq-h">
+              <span class="miniq-tag">Подскажите редакции</span>
+              <span class="miniq-q">Статьи на какую тему вам нравятся?</span>
+            </div>
+            <div class="miniq-opts" role="radiogroup" aria-label="Темы">
+              <label class="miniq-chip"><input type="radio" name="q-topic" value="money" /><span>Деньги и бюджет</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-topic" value="career" /><span>Карьера</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-topic" value="home" /><span>Жильё</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-topic" value="health" /><span>Здоровье</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-topic" value="travel" /><span>Путешествия</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-topic" value="family" /><span>Семья</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-topic" value="law" /><span>Право</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-topic" value="other" /><span>Другое</span></label>
+            </div>
+            <div class="miniq-thanks" aria-live="polite">
+              <span class="check"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6"><path d="M5 12.5l4 4 10-10"/></svg></span>
+              <span>Спасибо · учтём в подборках</span>
+              <button type="button" class="change">Изменить</button>
+            </div>
+          </aside>
+
+          <p>После каждого зачисления зарплаты автоматически переводите проценты:</p>
+
+          <ul>
+            <li>50% оставляете на основном счёте — для обязательных трат</li>
+            <li>20% уходит в «Цели»</li>
+            <li>25% в «Свободное»</li>
+            <li>5% в «Резерв»</li>
+          </ul>
+
+          <p>Если у вас нет автопополнения, потратите три минуты раз в месяц.</p>
+
+          <h2>Две цели — и больше не надо</h2>
+
+          <p>Финансовый план в стиле «накопить на дом, машину, образование детей и путешествие в Японию» не работает, потому что внимание распыляется. Поставьте ровно две цели:</p>
+
+          <ul>
+            <li>одну <strong>краткосрочную</strong> — на 3–6 месяцев (отпуск, новый ноутбук, ремонт)</li>
+            <li>одну <strong>долгосрочную</strong> — на год и больше (подушка безопасности, первый взнос)</li>
+          </ul>
+
+          <p>Когда краткосрочная закрывается, ставите следующую. Долгосрочная одна — и она важная.</p>
+
+          <!-- Pull quote -->
+          <div class="pull-quote">
+            <span class="qmark">“</span>
+            <blockquote>Бюджет — это не таблица. Это разговор с самим собой раз в неделю.</blockquote>
+            <div class="cite">Юля Ким · из материала «Деньги в паре»</div>
+          </div>
+
+          <!-- Inline image -->
+          <figure class="figure">
+            <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1400&q=80" alt="Монеты и купюры на столе" />
+            <figcaption>Раз в неделю достаточно открыть приложение банка и посмотреть, как наполняются корзины</figcaption>
+          </figure>
+
+          <!-- ===== Inline i2i карусель: similar + explore слой ===== -->
+          <aside class="our-carousel" aria-label="Что почитать дальше">
+            <div class="reco-h">
+              <div class="title-wrap">
+                <h3>Что почитать дальше</h3>
+                <span class="auto-badge"><span class="pulse"></span>Авто</span>
+              </div>
+              <div class="nav">
+                <button aria-label="Назад"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+                <button aria-label="Вперёд"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+              </div>
+            </div>
+
+            <div class="our-legend">
+              <span class="item"><span class="swatch similar"></span>Близкие по теме · 9</span>
+              <span class="sep"></span>
+              <span class="item"><span class="swatch explore"></span>Неожиданные, но интересные · 3</span>
+            </div>
+
+            <div class="reco-scroll">
+
+              <!-- 1: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">1</span>
+                  <img src="https://images.unsplash.com/photo-1579621970795-87facc2f976d?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">28.04</span>
+                </div>
+                <div class="body">
+                  <h4>Подушка безопасности: формула для разных уровней дохода</h4>
+                  <p class="context" data-rel="Дополняет">Корзина «Резерв» — это только часть подушки. Здесь подробно: сколько копить от дохода и где хранить.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>312</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>74</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>1.4K</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 2: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">2</span>
+                  <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">27.04</span>
+                </div>
+                <div class="body">
+                  <h4>Куда вложить первые 100 тысяч: безопасные опции</h4>
+                  <p class="context" data-rel="Развивает">Когда корзина «Цели» накопила первую сумму — встаёт вопрос, что с ней делать дальше.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>248</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>112</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>892</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 3: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">3</span>
+                  <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">26.04</span>
+                </div>
+                <div class="body">
+                  <h4>Как сократить подписки и не остаться без сервисов</h4>
+                  <p class="context" data-rel="Уточняет">К пункту про «Подписки в одном дне месяца» — список того, от чего можно отказаться без боли.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>189</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>63</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>720</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 4: EXPLORE (cross-dept, неожиданное) -->
+              <a class="reco-card explore" href="#">
+                <div class="cover">
+                  <span class="pos-tag">4</span>
+                  <span class="explore-tag">explore</span>
+                  <img src="https://images.unsplash.com/photo-1485518882345-15568b007407?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">22.04</span>
+                </div>
+                <div class="body">
+                  <h4>Минимализм в гардеробе экономит до 60 тысяч в год</h4>
+                  <p class="context" data-rel="Неожиданно">Сосед­ний раздел — но та же идея: меньше решений → меньше трат. Корзина «Свободное» скажет спасибо.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>421</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>187</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>1.1K</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 5: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">5</span>
+                  <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">25.04</span>
+                </div>
+                <div class="body">
+                  <h4>Финансовый план семьи: общий бюджет или раздельный</h4>
+                  <p class="context" data-rel="Связано">Если живёте вдвоём — четыре корзины надо распилить на двоих. Здесь четыре рабочих модели.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>276</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>156</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>934</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 6: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">6</span>
+                  <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">24.04</span>
+                </div>
+                <div class="body">
+                  <h4>Кредитка с грейс‑периодом: как пользоваться и не залезть в долг</h4>
+                  <p class="context" data-rel="Защищает">Грейс‑период — это бесплатный месяц «Резерва». Но только если соблюдать три правила.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>198</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>89</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>654</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 7: EXPLORE (карьера — смежная тема к деньгам) -->
+              <a class="reco-card explore" href="#">
+                <div class="cover">
+                  <span class="pos-tag">7</span>
+                  <span class="explore-tag">explore</span>
+                  <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">21.04</span>
+                </div>
+                <div class="body">
+                  <h4>Как договариваться о повышении зарплаты: три фразы, которые работают</h4>
+                  <p class="context" data-rel="Нестандартно">Соседний раздел — карьера. Но если корзина «Обязательного» съедает весь доход — надо менять не корзины, а доход.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>587</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>234</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>2.3K</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 8: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">8</span>
+                  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">23.04</span>
+                </div>
+                <div class="body">
+                  <h4>ИИС vs брокерский счёт: что выгоднее в 2026 году</h4>
+                  <p class="context" data-rel="Дополняет">Когда корзина «Цели» работает — следующий шаг: как из накоплений сделать капитал.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>225</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>91</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>781</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 9: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">9</span>
+                  <img src="https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">22.04</span>
+                </div>
+                <div class="body">
+                  <h4>Когда выгоднее досрочно закрывать кредит, а когда — нет</h4>
+                  <p class="context" data-rel="Уточняет">В корзине «Обязательного» сидят платежи по кредитам. Иногда выгоднее не гасить, а инвестировать.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>164</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>71</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>536</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 10: EXPLORE (психотерапия — неожиданно, но связано с финансами) -->
+              <a class="reco-card explore" href="#">
+                <div class="cover">
+                  <span class="pos-tag">10</span>
+                  <span class="explore-tag">explore</span>
+                  <img src="https://images.unsplash.com/photo-1591375267474-fd9ce5c2e0c1?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">19.04</span>
+                </div>
+                <div class="body">
+                  <h4>Психотерапия и деньги: когда это инвестиция, а не трата</h4>
+                  <p class="context" data-rel="Из соседнего">Соседний раздел — психология. Часто проблема не в бюджете, а в отношениях с деньгами.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>342</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>198</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>1.5K</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 11: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">11</span>
+                  <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">20.04</span>
+                </div>
+                <div class="body">
+                  <h4>Накопить на отпуск за полгода: рабочая стратегия</h4>
+                  <p class="context" data-rel="Связано">Краткосрочная цель из «двух целей» — конкретный пример: как закрыть отпуск без кредита.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>211</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>87</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>692</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- 12: similar -->
+              <a class="reco-card" href="#">
+                <div class="cover">
+                  <span class="pos-tag">12</span>
+                  <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                  <span class="age-tag">18.04</span>
+                </div>
+                <div class="body">
+                  <h4>Как отказаться от импульсивных покупок: четыре правила</h4>
+                  <p class="context" data-rel="Защищает">Главный враг «Свободного» — спонтанные покупки. Четыре приёма, которые реально работают.</p>
+                  <div class="stats">
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>178</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>112</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>823</span>
+                  </div>
+                </div>
+              </a>
+
+            </div>
+          </aside>
+
+          <h2>Что автоматизировать</h2>
+
+          <p>Всё, что можно — конкретно:</p>
+
+          <ul>
+            <li><strong>Зарплатные поручения</strong> — банк сам разносит деньги по корзинам в день зачисления</li>
+            <li><strong>Платежи по подпискам</strong> — соберите в один день месяца, чтобы видеть общую сумму</li>
+            <li><strong>Перевод в подушку</strong> — автопополнение копилки в день зарплаты</li>
+            <li><strong>Округление трат</strong> — каждая покупка округляется до 100 ₽ и разница уходит в «Резерв»</li>
+          </ul>
+
+          <p>Чем меньше решений вы принимаете каждый день, тем легче не сорваться.</p>
+
+          <h3>Что делать, если зарплата нерегулярная</h3>
+
+          <p>Фрилансерам и предпринимателям сложнее: доход колеблется, и фиксированные проценты не работают. В этом случае замените «50% / 20% / 25% / 5%» на абсолютные цифры — рассчитайте средний доход за полгода и работайте от него. В хорошие месяцы излишек уходит в «Резерв», в плохие — добираете оттуда.</p>
+
+          <!-- TL;DR -->
+          <aside class="tldr">
+            <h4>Если коротко</h4>
+            <ul>
+              <li>Заведите четыре «корзины»: Обязательное, Цели, Свободное, Резерв</li>
+              <li>Поставьте две цели — короткую и длинную. Не больше</li>
+              <li>Автоматизируйте всё, что можно: пусть банк разносит деньги сам</li>
+              <li>Раз в неделю смотрите 10 минут на остатки — и не открывайте таблицу</li>
+            </ul>
+          </aside>
+
+          <!-- Mini onboarding · length preference -->
+          <aside class="miniq" data-key="length">
+            <div class="miniq-h">
+              <span class="miniq-tag">И последний штрих</span>
+              <span class="miniq-q">Какой длины статьи вы предпочитаете читать?</span>
+            </div>
+            <div class="miniq-opts" role="radiogroup" aria-label="Длина">
+              <label class="miniq-chip"><input type="radio" name="q-length" value="short" /><span>Короткие · 3–5 минут</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-length" value="medium" /><span>Средние · 8–12 минут</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-length" value="long" /><span>Длинные · 15+ минут</span></label>
+              <label class="miniq-chip"><input type="radio" name="q-length" value="any" /><span>Без разницы</span></label>
+            </div>
+            <div class="miniq-thanks" aria-live="polite">
+              <span class="check"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6"><path d="M5 12.5l4 4 10-10"/></svg></span>
+              <span>Спасибо · подстроим длину рекомендаций</span>
+              <button type="button" class="change">Изменить</button>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Footer of article -->
+        <div class="article-footer">
+
+          <div class="article-tags">
+            <span class="label">Темы:</span>
+            <a href="#">Бюджет</a>
+            <a href="#">Деньги</a>
+            <a href="#">Финансы</a>
+            <a href="#">Подушка безопасности</a>
+            <a href="#">Подписки</a>
+          </div>
+
+          <div class="reactions">
+            <button class="react-btn primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>
+              Полезно
+              <span class="count">412</span>
+            </button>
+            <button class="react-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Комментарии
+              <span class="count">48</span>
+            </button>
+            <button class="react-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+              В закладки
+              <span class="count">712</span>
+            </button>
+            <span class="react-spacer"></span>
+            <button class="react-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+              Поделиться
+            </button>
+          </div>
+
+          <div class="author-card">
+            <span class="photo"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=70" alt="" /></span>
+            <div>
+              <div class="name">Анна Левченко</div>
+              <div class="role">Редактор раздела «Деньги» в Т—Ж. Пишу про бюджет, инвестиции и финансовые привычки.</div>
+              <div class="articles">128 МАТЕРИАЛОВ · С 2019 ГОДА</div>
+            </div>
+            <button class="follow">Следить</button>
+          </div>
+
+        </div>
+
+        <!-- ===== Подобрано специально для вас ===== -->
+        <section class="reco">
+          <div class="reco-h">
+            <h3>Подобрано специально для вас</h3>
+            <div class="nav">
+              <button aria-label="Назад"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button aria-label="Вперёд"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+            </div>
+          </div>
+          <div class="reco-scroll">
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1579621970795-87facc2f976d?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">26.04</span>
+              </div>
+              <div class="body">
+                <h4>Подушка безопасности: сколько откладывать в 2026 году</h4>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>233</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>87</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>1.2K</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">25.04</span>
+              </div>
+              <div class="body">
+                <h4>Дневник трат маркетолога из Казани с доходом 180 000 ₽</h4>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>156</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>134</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>489</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">24.04</span>
+              </div>
+              <div class="body">
+                <h4>Ипотека или аренда: считаем по-честному, без эмоций</h4>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>312</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>198</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>2.4K</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">23.04</span>
+              </div>
+              <div class="body">
+                <h4>ДМС от работодателя: что в нём бесполезно, а что важно</h4>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>87</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>56</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>234</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">22.04</span>
+              </div>
+              <div class="body">
+                <h4>Как уйти в долгий отпуск и не потерять работу</h4>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>198</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>112</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>987</span>
+                </div>
+              </div>
+            </a>
+
+          </div>
+        </section>
+
+        <!-- ===== Вот что ещё мы писали по этой теме ===== -->
+        <section class="reco">
+          <div class="reco-h">
+            <h3>Вот что ещё мы писали по этой теме</h3>
+            <div class="nav">
+              <button aria-label="Назад"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+              <button aria-label="Вперёд"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+            </div>
+          </div>
+          <div class="reco-scroll">
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">21.04</span>
+              </div>
+              <div class="body">
+                <h4>Деньги в паре: четыре рабочих модели бюджета</h4>
+                <p class="context" data-rel="Развивает">Если бюджет на двоих — выбираем модель, в которой «корзины» работают для обоих партнёров.</p>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>421</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>289</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>1.8K</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">20.04</span>
+              </div>
+              <div class="body">
+                <h4>Списали деньги по подписке, которую вы не оформляли</h4>
+                <p class="context" data-rel="Уточняет">К разделу про автоматизацию: какие подписки полезно собрать в один день, а от каких — избавиться.</p>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>187</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>156</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>743</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">19.04</span>
+              </div>
+              <div class="body">
+                <h4>Как вернуть налог за лечение и обучение в 2026 году</h4>
+                <p class="context" data-rel="Дополняет">Способ пополнить корзину «Цели» без новых трат — возврат до 52 000 ₽ из ранее уплаченного НДФЛ.</p>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>342</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>78</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>2.1K</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1444653614773-995cb1ef9efa?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">18.04</span>
+              </div>
+              <div class="body">
+                <h4>Как договариваться о повышении: фразы, которые работают</h4>
+                <p class="context" data-rel="Связано">Если 50% «Обязательного» съедают весь доход — корзины не сойдутся, пока не вырастет сама зарплата.</p>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>523</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>312</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>3.2K</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="reco-card" href="#">
+              <div class="cover">
+                <img src="https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&w=600&q=70" alt="" loading="lazy" />
+                <span class="age-tag">17.04</span>
+              </div>
+              <div class="body">
+                <h4>Договор аренды: семь пунктов, которые реально защищают</h4>
+                <p class="context" data-rel="Защищает">Аренда — самая большая статья «Обязательного». Один абзац в договоре экономит десятки тысяч.</p>
+                <div class="stats">
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10v12M2 14h5l3 7c2 0 4-1 5-3l1-5h5a2 2 0 002-2l-1-5a2 2 0 00-2-2h-5l1-3a3 3 0 00-3-3l-3 7h-3v9z"/></svg>278</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>89</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>1.4K</span>
+                </div>
+              </div>
+            </a>
+
+          </div>
+        </section>
+
+      </article>
+
+    </div>
+  </div>
+
+  <!-- ===== Newsletter ===== -->
+  <section class="newsletter full-bleed" id="newsletter">
+    <div class="container nl-inner">
+      <div>
+        <span class="nl-eyebrow">Письмо редактора · по воскресеньям</span>
+        <h2>Одно письмо <em>в неделю.</em><br/>Только то, что стоит&nbsp;прочитать.</h2>
+        <p>Пять материалов, отобранных вручную, и короткое письмо от редактора. Без рекламы внутри.</p>
+        <div class="nl-perks">
+          <span>Без спама</span>
+          <span>Отписка в один клик</span>
+          <span>32 000 читателей</span>
+        </div>
+      </div>
+      <div>
+        <form class="nl-form" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Готово ✓'; this.querySelector('input').value='';">
+          <input type="email" placeholder="ваш@email.ru" aria-label="Email" required />
+          <button type="submit">Подписаться</button>
+        </form>
+        <div class="nl-perks" style="margin-top:14px"><span>Воскресенье, 09:00 МСК</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer>
+    <div class="container">
+      <div class="foot-wordmark">
+        <span>Т—Ж</span>
+        <span class="since">с 2014 — самый большой<br/>журнал про деньги и жизнь</span>
+      </div>
+      <div class="foot-cols">
+        <div><h5>Журнал</h5><a href="#">Все темы</a><a href="#">Авторам</a><a href="#">Редакция</a><a href="#">Реклама</a></div>
+        <div><h5>Сервисы</h5><a href="#">Калькуляторы</a><a href="#">Тесты</a><a href="#">Игры</a><a href="#">Учебник</a></div>
+        <div><h5>Соцсети</h5><a href="#">Telegram</a><a href="#">VK</a><a href="#">YouTube</a><a href="#">RSS</a></div>
+        <div><h5>Помощь</h5><a href="#">Контакты</a><a href="#">Правила</a><a href="#">Политика</a><a href="#">FAQ</a></div>
+      </div>
+      <div class="foot-bottom">
+        <span>© Т—Ж, 2014 — 2026</span>
+        <span class="mono">v.4.2.0 · made with care in Moscow</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ============================================================
+    // Mini onboarding · сохраняем выбор и показываем подтверждение
+    // ============================================================
+    (function(){
+      var blocks = document.querySelectorAll('.miniq');
+      blocks.forEach(function(block){
+        var inputs = block.querySelectorAll('input[type="radio"]');
+        var change = block.querySelector('.change');
+        inputs.forEach(function(inp){
+          inp.addEventListener('change', function(){
+            block.classList.add('answered');
+          });
+        });
+        if (change) change.addEventListener('click', function(){
+          block.classList.remove('answered');
+          inputs.forEach(function(i){ i.checked = false; });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

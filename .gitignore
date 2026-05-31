@@ -1,0 +1,42 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# CatBoost training junk
+catboost_info/
+
+# Large data (do not commit — see README for how to obtain)
+user_articles_embeddings.csv
+recs_i2i.csv
+recs_i2i_sample.csv
+tj_article.csv
+embeddings_cache/
+coview_cache/
+
+# Colab bundle (regenerate: python scripts/prepare_colab_bundle.py)
+tj-recs-bundle.zip
+notebooks/*.zip
+
+# Optional: trained models (~21 MB total — uncomment if you prefer Git LFS or external storage)
+# models/*.pkl
+# models/*.cbm
+
+# OS / editor
+.DS_Store
+~$*
+*.swp
+.idea/
+.vscode/
+
+# Scratch / local-only
+_carousel_chunk.txt
+_tj_stay_raw.html
+reports/~$*
+
+# Large media (optional — keep if repo size is OK)
+# media/demo.mp4
+# laptop-mockups/video-laptop-screen.mp4
