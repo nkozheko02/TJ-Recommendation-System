@@ -8,8 +8,6 @@
 
 ## 1. Архитектура
 
-Подробная диаграмма — `recs_system_diagram.png` / `recs_system_diagram.svg` (генерируется `build_architecture_diagram.py`). Вкратце:
-
 ```
                     источник (article_id)
                               │
@@ -68,10 +66,9 @@
 | `build_examples_docx.py` | Из CSV `reports/examples_neutral/*` собирает `examples_neutral.docx` (landscape, полные заголовки, без обрезки) для вставки в отчёт. | После `make_neutral_examples.py`. |
 | `scripts/make_presentation_charts.py` | Рисует 5 PNG в `reports/figures/presentation/` (nDCG, MRR, Recall, сводный uplift, итоговая таблица) — готовые слайды для предзащиты. По умолчанию использует `ltr_extra_metrics_i2i.json` (чистая i2i‑оценка); с флагом `--mixed` — старую смешанную выборку. | После `eval_ltr_i2i.py` / обновления метрик. |
 | `build_architecture_diagram.py` | Рендерит `recs_system_diagram.png/svg`. | После изменения архитектуры. |
-| `build_diploma.py` | Собирает `diploma.docx` из текущих метрик и графиков. | После любого из перечисленных выше скриптов. |
 | `tj_recs_text_embeddings.ipynb` | **Интерактивная среда** для разработки и пошагового сравнения «наша vs baseline» по одной статье. Ad‑hoc эксперименты, для прода не нужен. Может расходиться с прод‑конфигом (`serve_carousel.py`) — источник истины именно скрипт. | Эксперименты. |
 | `recommender.py` | Демо‑CLI: похожие по заголовку через BGE на лету (без LTR/coview/explore). Самостоятельная мини‑утилита. | Демонстрация. |
-| `build_recs_i2i.py` | **Legacy**: массовый прогон по cosine kNN, без coview/LTR/двух пулов. Один раз сгенерировал `recs_i2i.csv`. К текущей архитектуре не подключён. | Не использовать. |
+| `build_recs_i2i.py` |
 
 Сохранённые модели:
 
@@ -212,80 +209,4 @@ Threshold‑ы, заданные константами в `serve_carousel.py`:
 
 - Честный A/B «без coview vs с coview» (одна и та же i2i‑выборка 20 781 групп, см. `reports/coview_uplift_i2i.json`): **nDCG@6 0.746 → 0.751 (+0.5 пп, +0.6 %), MRR@6 0.663 → 0.669 (+0.6 пп, +0.9 %), Recall@1 0.400 → 0.410 (+1.0 пп, +2.5 %)**. Эффект сконцентрирован в Recall@1 — coview сильнее всего помогает поднять реально кликнутую статью на первую позицию. `coview_score` и `coview_rank` по gain стоят 13–14-ми из 17 признаков (gain ≈ 0.79·10⁶ и 0.53·10⁶), выше формальных one‑hot признаков `same_*`, но ниже всех числовых характеристик источника и кандидата.
 - **`baseline_sim ≈ random` на nDCG/MRR** — типичное проявление **selection bias**: логи собраны под старой системой, и «исходный» список кандидатов уже плотно отфильтрован прод‑retrieval'ом, поэтому перестановка по cosine на этом узком пуле даёт мало выигрыша.
-- Прирост LTR над baseline стабилен на всех K, но это **нижняя оценка** реального онлайн‑эффекта (см. подробный разбор в `diploma.docx`, раздел 10.2).
-
-### Графики
-
-- **Для презентации** (DPI 200, чистая палитра) — `reports/figures/presentation/*.png`, генерирует `scripts/make_presentation_charts.py`. По умолчанию использует i2i‑метрики (§6.1). Чтобы построить графики на смешанной выборке (§6.2), запустите с флагом `--mixed`.
-- **Для отчёта/диплома** — для каждого графика хранится две версии: без суффикса (mixed, исторический прогон) и с суффиксом `_i2i.png` (актуальная чистая i2i‑оценка). Главные для диплома — `_i2i`‑версии:
-  - `reports/figures/ltr_metrics_overall_i2i.png`, `recall_at_n_i2i.png`, `ndcg_at_n_i2i.png`, `uplift_lgbm_vs_baseline_i2i.png`
-  - `feature_importance_gain_i2i.png`, `ltr_metrics_by_entity_i2i.png`, `ltr_vs_baseline_by_entity_i2i.png`
-  - `pdp_sim_i2i.png`, `pdp_logviews_i2i.png`, `pdp_fresh_i2i.png`
-  - `score_distribution_two_models_i2i.png`, `score_distribution_clicked_vs_not_i2i.png`
-- **Не зависят от i2i/mixed** (data‑аналитика train): `propensity_by_position.png`, `propensity_by_entity.png`, `target_share_by_position.png`, `train_test_split_dates.png`, `group_size_distribution.png`.
-
----
-
-## 7. Как воспроизвести с нуля
-
-### 7.1 Окружение
-
-```bash
-cd "/path/to/Т-Ж рекомендации"
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 7.2 Подготовка данных
-
-1. Положить `tj_article.csv` в корень.
-2. Положить parquet с логами (например, `tj_session_w_target_full.parquet`) и при необходимости поправить путь в `train_ltr_full.py` (константа `LOGS_PARQUET`).
-3. Один раз собрать memmap‑эмбеддингов из `user_articles_embeddings.csv` (через ноутбук, ячейка `build_embeddings_memmap`). После этого исходный CSV больше не нужен — все скрипты работают с `embeddings_cache/`.
-
-### 7.3 Обучение и аналитика
-
-```bash
-.venv/bin/python train_ltr_full.py             # обучает обе модели, сохраняет в models/ + метрики/графики (mixed)
-.venv/bin/python eval_ltr_i2i.py               # чистая оценка на i2i‑блоках → reports/ltr_*_i2i.json
-.venv/bin/python extra_analytics.py            # дополнительные графики (по умолчанию i2i, *_i2i.png; --mixed для старой выборки)
-.venv/bin/python train_eval_no_coview_i2i.py   # обучить LGBM без coview и посчитать coview‑uplift на i2i
-.venv/bin/python scripts/make_presentation_charts.py  # 5 PNG для презентации (по умолчанию i2i)
-.venv/bin/python analyze_propensity.py         # propensity по типам каруселей
-.venv/bin/python make_example_serps.py         # таблицы примеров выдач для отчёта
-.venv/bin/python build_architecture_diagram.py # перерендерить диаграмму
-.venv/bin/python build_diploma.py              # собрать diploma.docx
-```
-
-Полный прогон `train_ltr_full.py` занимает порядка 6–8 минут на ноутбуке (LightGBM ≈ 8 с, CatBoost ≈ 7.5 мин).
-
-### 7.4 Интерактивное сравнение «наша vs baseline» по одной статье
-
-```python
-# в tj_recs_text_embeddings.ipynb
-our_df, base_df = compare_two_systems_one_article(
-    "<UUID-источника-из-tj_article-и-из-embeddings_cache/ids.txt>",
-    k=12,
-    explore_slots=3,
-    use_ltr=True,
-    use_coview=True,
-    ltr_backend="lgbm",
-    max_candidate_age_days=365.0,
-)
-```
-
-В этом режиме LTR обучается заново под каждый запрос. Для продакшен‑воспроизводимости лучше использовать сохранённую модель из `models/ltr_lgbm.pkl` — пример скоринга есть в `make_example_serps.py`.
-
----
-
-## 8. Ограничения и следующие шаги
-
-- **Личной персонализации нет** — пайплайн i2i по статьям, без user‑эмбеддингов и сессионных моделей.
-- **Inference batch‑ориентирован**: предполагается, что выдача собирается оффлайн для всех статей и хранится. Серверной HTTP‑части в репозитории нет.
-- **Cold‑start статей частично закрыт fallback'ом**: у ~65 % статей каталога нет coview‑соседей. Если такая статья ещё и свежая (`age < 3`), `serve_carousel.py` автоматически переключается на эвристический скор «sim + priors» (см. §5 «Fallback…»). LTR применяется только когда у источника достаточно данных. Для глубокого решения остаётся batch‑перерасчёт coview‑индекса по мере накопления показов.
-- **Эвристика — это нижняя планка качества**, а не замена LTR. Веса priors (`0.05 / 0.15 / 0.10`) подобраны разумно, но не оптимизированы под метрики. Если доля fallback‑источников вырастет (например, в первые недели после массовой публикации новых статей), стоит дополнительно валидировать качество выдачи на этом сегменте.
-- **Online A/B** — самое естественное продолжение работы: только онлайн позволит честно измерить разницу с продакшен‑системой и победить selection bias. Оффлайн‑метрики (см. §6) — это нижняя оценка реального эффекта.
-- **Дрейф ноутбука и `serve_carousel.py`**: `tj_recs_text_embeddings.ipynb` использовался как песочница для разработки и сравнения «наша vs baseline». Источник истины — `serve_carousel.py`; ноутбук может содержать ad‑hoc эксперименты, не вошедшие в прод‑конфиг.
-- Возможные расширения: sequence‑модели (SASRec / BERT4Rec) при появлении персонализации, ANN‑индекс (HNSW / FAISS) при росте каталога на порядок, периодическое пересчитывание propensity на скользящем окне, distillation от двухбашенной модели для снижения variance таргета, отдельные модели под разные типы каруселей.
-
-Подробное описание подходов, ссылок на литературу, обсуждение selection bias и propensity — в `diploma.docx` (собирается через `build_diploma.py`).
+- Прирост LTR над baseline стабилен на всех K, но это **нижняя оценка** реального онлайн‑эффекта
